@@ -5,11 +5,16 @@
  * Created on 22. November 2016, 18:49
  */
 
-#ifndef MISCUTILS_H
-#define MISCUTILS_H
+#ifndef MISCUTILS_HPP
+#define MISCUTILS_HPP
 
+#include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
+#include <functional>
+
+
 
     template<typename T>
     T StringToNumber(const std::string& numberAsString)
@@ -26,5 +31,5 @@
     }    
 
 
-#endif /* MISCUTILS_H */
+#endif /* MISCUTILS_HPP */
 

@@ -36,9 +36,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/InputParameter.o \
-	${OBJECTDIR}/S3BasicImage.o \
 	${OBJECTDIR}/S3MetaData.o \
-	${OBJECTDIR}/S3NcdfImg.o \
+	${OBJECTDIR}/S3NcdfData.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/tinyxml/tinystr.o \
 	${OBJECTDIR}/tinyxml/tinyxml.o \
@@ -75,20 +74,15 @@ ${OBJECTDIR}/InputParameter.o: InputParameter.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/InputParameter.o InputParameter.cpp
 
-${OBJECTDIR}/S3BasicImage.o: S3BasicImage.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3BasicImage.o S3BasicImage.cpp
-
 ${OBJECTDIR}/S3MetaData.o: S3MetaData.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3MetaData.o S3MetaData.cpp
 
-${OBJECTDIR}/S3NcdfImg.o: S3NcdfImg.cpp 
+${OBJECTDIR}/S3NcdfData.o: S3NcdfData.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3NcdfImg.o S3NcdfImg.cpp
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3NcdfData.o S3NcdfData.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

@@ -5,7 +5,7 @@
  * Created on 23. November 2016, 10:39
  */
 
-#include "InputParameter.h"
+#include "InputParameter.hpp"
 
 
 using std::cout;
@@ -13,7 +13,8 @@ using std::endl;
 
         
 InputParameter::InputParameter() {
-    slstrProductDir = "e:/sat/S3A_SLSTR/S3A_SL_1_RBT____20160902T072518_20160902T072818_20160903T162446_0179_008_163_2879_LN2_O_NT_002.SEN3";
+    //slstrProductDir = "e:/sat/S3A_SLSTR/S3A_SL_1_RBT____20160902T072518_20160902T072818_20160903T162446_0179_008_163_2879_LN2_O_NT_002.SEN3";
+    slstrProductDir = "e:/sat/S3A_SLSTR/S3A_SL_1_RBT____20160608T092412_20160608T092712_20160608T115216_0179_005_093_2159_SVL_O_NR_001.SEN3";
     s3MetaData.parseManifest(slstrProductDir);
     aodOutDir = "e:/sat/S3A_SLSTR_AOD/%YYYY%/%MM%";
     modifyAodOutNames();
@@ -35,6 +36,7 @@ void InputParameter::modifyAodOutNames(){
     int extIdx = aodOutName.find_last_of(".") + 1;
     int extLen = aodOutName.length() - extIdx;
     aodOutName.replace(extIdx, extLen, "nc");
+    aodOutName = aodOutDir + "/" + aodOutName;
 }
 
 void InputParameter::replaceStringInPlace(std::string& subject, const std::string& search,

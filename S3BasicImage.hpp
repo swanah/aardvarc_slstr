@@ -11,10 +11,12 @@
  * Created on 23. November 2016, 19:21
  */
 
-#ifndef S3BASICIMAGE_H
-#define S3BASICIMAGE_H
+#ifndef S3BASICIMAGE_HPP
+#define S3BASICIMAGE_HPP
 
 #include <cstddef>
+#include <iostream>
+
 
 
 class S3BasicImage {
@@ -32,10 +34,11 @@ public:
     double valScale, valOffset;
     short *img;
     short noData;
+    std::string name;
     
 private:
 
 };
 
-#endif /* S3BASICIMAGE_H */
+#endif /* S3BASICIMAGE_HPP */
 

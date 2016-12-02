@@ -13,15 +13,19 @@
 
 #include <cstdlib>
 #include <netcdf>
-#include "InputParameter.h"
-#include "S3MetaData.h"
-#include "S3BasicImage.h"
-#include "S3NcdfImg.h"
+#include "InputParameter.hpp"
+#include "S3MetaData.hpp"
+#include "S3NcdfData.hpp"
+#include "Images.hpp"
+#include "Interpolation.hpp"
 
 using std::cout;
 using std::cerr;
 using std::endl;
 using namespace netCDF;
+
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<short>& img);
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<double>& img);
 
 
 /*
@@ -33,30 +37,81 @@ int main(int argc, char** argv) {
     S3MetaData& s3md = pars.s3MetaData;
     cout << s3md.productName << endl;
     try {
+        
+        S3NcdfData s3Data;
+        /* reading nadir and oblique radiance images */
+        s3Data.readNcdf(s3md);
+                
+        /* writing radiance data to ncdf file */
+        int& imgWidth  = s3md.slstrPInfo.nadirImg0500m.width;
+        int& imgHeight = s3md.slstrPInfo.nadirImg0500m.height;
+        cout << "writing: " << pars.aodOutName << endl;
+        NcFile ncOut(pars.aodOutName, NcFile::replace);
+        NcDim xDim = ncOut.addDim("columns", imgWidth);
+        NcDim yDim = ncOut.addDim("rows", imgHeight);
+        std::vector<NcDim> dimVec;
+        dimVec.push_back(yDim);
+        dimVec.push_back(xDim);
 
-        S3NcdfImg s1ImgN(s3md.slstrPInfo.nadirImg0500m.width, s3md.slstrPInfo.nadirImg0500m.height);
-        std::string ncdfName = s3md.s3FileName + "/" + s3md.CHANNEL_RAD_NAME[0][0] + ".nc";
-        s1ImgN.readNcdf(ncdfName, s3md.CHANNEL_RAD_NAME[0][0]);
-        cout << s1ImgN.width << "x";
-        cout << s1ImgN.height <<"+";
-        cout << s1ImgN.xOff << "+";
-        cout << s1ImgN.yOff << endl;
-        
-        S3NcdfImg s1ImgO(s3md.slstrPInfo.nadirImg0500m.width, s3md.slstrPInfo.nadirImg0500m.height, s1ImgN.xOff, s1ImgN.yOff);
-        ncdfName = s3md.s3FileName + "/" + s3md.CHANNEL_RAD_NAME[1][0] + ".nc";
-        s1ImgO.readNcdf(ncdfName, s3md.CHANNEL_RAD_NAME[1][0]);
-        cout << s1ImgO.width << "x";
-        cout << s1ImgO.height <<"+";
-        cout << s1ImgO.xOff << "+";
-        cout << s1ImgO.yOff << endl;
-        
-        
+        NcVar var;
+        for (int iView = 0; iView < 2; iView++){
+            for (int iBand = 0; iBand < 5; iBand++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
+            }
+
+            addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[iView]);
+            addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[iView]);
+            addWriteVar(&ncOut, dimVec, s3Data.s3SzaImgs[iView]);
+            addWriteVar(&ncOut, dimVec, s3Data.s3SaaImgs[iView]);
+            addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
+            addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
+        }
+
+        ncOut.close();
     }
     catch (exceptions::NcException& e){
         cerr << "unrecoverable error, exiting...\n";
         cerr << e.what();
         return e.errorCode();
     }
+    cout << "finished!" << endl;
     return 0;
 }
+
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<short>& img){
+    NcVar var = ncOut->addVar(img.name, ncShort, dimVec);
+    
+    var.setCompression(true, true, 5);
+    
+    if (img.hasOffset){
+        var.putAtt("add_offset", ncDouble, img.valOffset);
+    }
+    if (img.hasScale){
+        var.putAtt("scale_factor", ncDouble, img.valScale);
+    }
+    if (img.hasNoData){
+        var.putAtt("_FillValue", ncShort, img.noData);
+    }
+    var.putAtt("coordinates", std::string("latitude_an longitude_an"));
+    
+    var.putVar(img.img);
+}
+
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<double>& img){
+    NcVar var = ncOut->addVar(img.name, ncDouble, dimVec);
+    
+    var.setCompression(true, true, 5);
+    
+    if (img.hasOffset){
+        var.putAtt("add_offset", ncDouble, img.valOffset);
+    }
+    if (img.hasScale){
+        var.putAtt("scale_factor", ncDouble, img.valScale);
+    }
+    if (img.hasNoData){
+        var.putAtt("_FillValue", ncDouble, img.noData);
+    }
+    var.putVar(img.img);
+}
+
 

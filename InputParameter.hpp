@@ -11,11 +11,11 @@
  * Created on 23. November 2016, 10:39
  */
 
-#ifndef INPUTPARAMETER_H
-#define INPUTPARAMETER_H
+#ifndef INPUTPARAMETER_HPP
+#define INPUTPARAMETER_HPP
 
 #include <iostream>
-#include "S3MetaData.h"
+#include "S3MetaData.hpp"
 
 using std::string;
 
@@ -50,5 +50,5 @@ private:
 
 inline InputParameter::~InputParameter(){}
 
-#endif /* INPUTPARAMETER_H */
+#endif /* INPUTPARAMETER_HPP */
 

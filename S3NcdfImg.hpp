@@ -11,10 +11,10 @@
  * Created on 23. November 2016, 20:43
  */
 
-#ifndef S3NCDFIMG_H
-#define S3NCDFIMG_H
+#ifndef S3NCDFIMG_HPP
+#define S3NCDFIMG_HPP
 
-#include "S3BasicImage.h"
+#include "S3BasicImage.hpp"
 
 class S3NcdfImg : public S3BasicImage {
 public:

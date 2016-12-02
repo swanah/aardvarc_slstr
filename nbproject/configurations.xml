@@ -8,11 +8,13 @@
         <itemPath>tinyxml/tinystr.h</itemPath>
         <itemPath>tinyxml/tinyxml.h</itemPath>
       </logicalFolder>
-      <itemPath>InputParameter.h</itemPath>
-      <itemPath>S3BasicImage.h</itemPath>
-      <itemPath>S3MetaData.h</itemPath>
-      <itemPath>S3NcdfImg.h</itemPath>
-      <itemPath>miscUtils.h</itemPath>
+      <itemPath>Images.hpp</itemPath>
+      <itemPath>InputParameter.hpp</itemPath>
+      <itemPath>Interpolation.hpp</itemPath>
+      <itemPath>S3MetaData.hpp</itemPath>
+      <itemPath>S3NcdfData.hpp</itemPath>
+      <itemPath>defs.hpp</itemPath>
+      <itemPath>miscUtils.hpp</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -28,9 +30,8 @@
         <itemPath>tinyxml/tinyxmlparser.cpp</itemPath>
       </logicalFolder>
       <itemPath>InputParameter.cpp</itemPath>
-      <itemPath>S3BasicImage.cpp</itemPath>
       <itemPath>S3MetaData.cpp</itemPath>
-      <itemPath>S3NcdfImg.cpp</itemPath>
+      <itemPath>S3NcdfData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -60,29 +61,32 @@
         <linkerTool>
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs netcdf-cxx4`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs boost_filesystem`</linkerOptionItem>
             <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="Images.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="InputParameter.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="InputParameter.h" ex="false" tool="3" flavor2="0">
+      <item path="InputParameter.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="S3BasicImage.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="S3BasicImage.h" ex="false" tool="3" flavor2="0">
+      <item path="Interpolation.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="S3MetaData.h" ex="false" tool="3" flavor2="0">
+      <item path="S3MetaData.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="S3NcdfImg.cpp" ex="false" tool="1" flavor2="0">
+      <item path="S3NcdfData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="S3NcdfImg.h" ex="false" tool="3" flavor2="0">
+      <item path="S3NcdfData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="defs.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="miscUtils.h" ex="false" tool="3" flavor2="0">
+      <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="tinyxml/tinystr.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -117,25 +121,27 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="Images.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="InputParameter.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="InputParameter.h" ex="false" tool="3" flavor2="0">
+      <item path="InputParameter.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="S3BasicImage.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="S3BasicImage.h" ex="false" tool="3" flavor2="0">
+      <item path="Interpolation.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="S3MetaData.h" ex="false" tool="3" flavor2="0">
+      <item path="S3MetaData.hpp" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="S3NcdfImg.cpp" ex="false" tool="1" flavor2="0">
+      <item path="S3NcdfData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="S3NcdfImg.h" ex="false" tool="3" flavor2="0">
+      <item path="S3NcdfData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="defs.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="miscUtils.h" ex="false" tool="3" flavor2="0">
+      <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="tinyxml/tinystr.cpp" ex="false" tool="1" flavor2="0">
       </item>

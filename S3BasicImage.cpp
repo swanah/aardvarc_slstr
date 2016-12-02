@@ -13,8 +13,8 @@
 
 #include <iostream>
 #include <algorithm>
-#include "S3BasicImage.h"
-#include "InputParameter.h"
+#include "S3BasicImage.hpp"
+#include "InputParameter.hpp"
 
 S3BasicImage::S3BasicImage(const int& newWidth, const int& newHeight, const int& xOffset, const int& yOffset){
     width = newWidth;
@@ -35,6 +35,7 @@ S3BasicImage::S3BasicImage(const S3BasicImage& orig) {
     int n = width*height;
     img = new short[n];
     for (int i=0; i<n; i++) img[i] = orig.img[i];
+    name = orig.name;
 }
 
 S3BasicImage& S3BasicImage::operator=(const S3BasicImage& rhs) {
@@ -50,6 +51,7 @@ S3BasicImage& S3BasicImage::operator=(const S3BasicImage& rhs) {
     std::swap(valOffset, lhs.valOffset);
     std::swap(noData, lhs.noData);
     std::swap(img, lhs.img);
+    std::swap(name, lhs.name);
     return *this;
 }
 

@@ -5,8 +5,8 @@
  * Created on 28. Oktober 2016, 21:36
  */
 
-#ifndef S3METADATA_H
-#define S3METADATA_H
+#ifndef S3METADATA_HPP
+#define S3METADATA_HPP
 
 #include <iostream>
 #include "tinyxml/tinyxml.h"
@@ -16,7 +16,7 @@
         int xOff, yOff;
     } imageInfo;
     
-    
+
     class S3MetaData {                          // begin declaration of class
     public:                                     // begin public section
         S3MetaData(){}
@@ -35,13 +35,23 @@
             int resTpg;
             imageInfo nadirImg0500m, obliqImg0500m;
             imageInfo nadirTpgImg, obliqTpgImg;
+            int ncdfXoff, ncdfYoff;
         } slstrPInfo;
         
         static const std::string XFDU_MANIFEST_NAME;
         static const std::string CHANNEL_RAD_NAME[][5];
         static const std::string CHANNEL_QUAL_NAME[][5];
-        static const std::string GEODECTIC_NAME[];
+        static const std::string GEODETIC_NAME[];
+        static const std::string LAT_NAME[];
+        static const std::string LON_NAME[];
+        static const std::string GEODETIC_TPG_NAME;
+        static const std::string LAT_TPG_NAME;
+        static const std::string LON_TPG_NAME;
         static const std::string GEOMETRY_NAME[];
+        static const std::string SZA_NAME[];
+        static const std::string SAA_NAME[];
+        static const std::string VZA_NAME[];
+        static const std::string VAA_NAME[];
         static const std::string FLAGS_NAME[];
         static const std::string TIME_NAME[];
         
@@ -60,7 +70,7 @@
     inline S3MetaData::~S3MetaData() {
         //std::cout << "meta data class for \"" << s3FileName << "\" destroyed." << std::endl;
     }
-
-
+    
+    
 #endif /* S3METADATA_H */
 

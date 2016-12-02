@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include "tinyxml/tinyxml.h"
-#include "S3MetaData.h"
-#include "miscUtils.h"
+#include "S3MetaData.hpp"
+#include "miscUtils.hpp"
 
 /* const definition */
     const std::string S3MetaData::XFDU_MANIFEST_NAME = "xfdumanifest.xml";
@@ -16,8 +16,17 @@
                                                           {"S1_radiance_ao", "S2_radiance_ao", "S3_radiance_ao", "S5_radiance_ao", "S6_radiance_ao"}};
     const std::string S3MetaData::CHANNEL_QUAL_NAME[][5] = {{"S1_quality_an", "S2_quality_an", "S3_quality_an", "S5_quality_an", "S6_quality_an"},
                                                            {"S1_quality_ao", "S2_quality_ao", "S3_quality_ao", "S5_quality_ao", "S6_quality_ao"}};
-    const std::string S3MetaData::GEODECTIC_NAME[] = {"geodetic_an", "geodetic_ao"};
+    const std::string S3MetaData::GEODETIC_NAME[] = {"geodetic_an", "geodetic_ao"};
+    const std::string S3MetaData::LAT_NAME[] = {"latitude_an", "latitude_ao"};
+    const std::string S3MetaData::LON_NAME[] = {"longitude_an", "longitude_ao"};
+    const std::string S3MetaData::GEODETIC_TPG_NAME = "geodetic_tx";
+    const std::string S3MetaData::LAT_TPG_NAME = "latitude_tx";
+    const std::string S3MetaData::LON_TPG_NAME = "longitude_tx";
     const std::string S3MetaData::GEOMETRY_NAME[] = {"geometry_tn", "geometry_to"};
+    const std::string S3MetaData::SZA_NAME[] = {"solar_zenith_tn", "solar_zenith_to"};
+    const std::string S3MetaData::SAA_NAME[] = {"solar_azimuth_tn", "solar_azimuth_to"};
+    const std::string S3MetaData::VZA_NAME[] = {"sat_zenith_tn", "sat_zenith_to"};
+    const std::string S3MetaData::VAA_NAME[] = {"sat_azimuth_tn", "sat_azimuth_to"};
     const std::string S3MetaData::FLAGS_NAME[] = {"flags_an", "flags_ao"};
     const std::string S3MetaData::TIME_NAME[] = {"time_an", "time_ao"};
     
@@ -87,7 +96,7 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
         throw std::runtime_error("shiiit!");
     }
     
-    
+    //TODO: assert i/o files exist and input is correct!!!
 }
 
 /**

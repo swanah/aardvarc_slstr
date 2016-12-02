@@ -13,8 +13,8 @@
 
 #include <iostream>
 #include <netcdf>
-#include "S3NcdfImg.h"
-#include "InputParameter.h"
+#include "S3NcdfImg.hpp"
+#include "InputParameter.hpp"
 
 using std::cout;
 using std::endl;
@@ -22,19 +22,24 @@ using namespace netCDF;
 
 
 void S3NcdfImg::readNcdf(std::string ncdfName, std::string varName){
-
+    
     NcFile ncF(ncdfName, NcFile::read);
+    
     int xo, yo;
     ncF.getAtt("track_offset").getValues(&xo);
     ncF.getAtt("start_offset").getValues(&yo);
-
+    
+    name = varName;
+    
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
         throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
+    
     imgVar.getAtt("add_offset").getValues(&valOffset);
     imgVar.getAtt("scale_factor").getValues(&valScale);
     imgVar.getAtt("_FillValue").getValues(&noData);
+    
     size_t h = imgVar.getDim(0).getSize();
     size_t w = imgVar.getDim(1).getSize();
     if (w == width && h == height) {
@@ -53,9 +58,8 @@ void S3NcdfImg::readNcdf(std::string ncdfName, std::string varName){
         cout << xOff << "+";
         cout << yOff << endl;
 
-        int n = w*h;
         S3BasicImage tmp(w, h);
-        imgVar.getVar(img);
+        imgVar.getVar(tmp.img);
         int dx = xOff - xo;
         int dy = yOff - yo;
         int i2, j2;
@@ -64,10 +68,10 @@ void S3NcdfImg::readNcdf(std::string ncdfName, std::string varName){
                 i2 = i1 - dx;
                 j2 = j1 - dy;
                 if (j2 >= 0 && j2 < h && i2 >= 0 && i2 < w){
-                    img[j1*w+i1] = tmp.img[j2*w+i2];
+                    img[j1*width+i1] = tmp.img[j2*w+i2];
                 }
                 else {
-                    img[j1*w+i1] = tmp.noData;
+                    img[j1*width+i1] = noData;
                 }
             }
         }
