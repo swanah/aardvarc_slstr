@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
         S3NcdfData s3Data;
         /* reading nadir and oblique radiance images */
         s3Data.readNcdf(s3md);
+        s3Data.convRad2Refl();
                 
         /* writing radiance data to ncdf file */
         int& imgWidth  = s3md.slstrPInfo.nadirImg0500m.width;

@@ -32,11 +32,13 @@ public:
     S3BasicImage<double> s3SaaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VzaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VaaImgs[N_SLSTR_VIEWS];
-    
+
+    double s3Irrad[N_SLSTR_VIEWS][N_SLSTR_BANDS];
     S3NcdfData();
     ~S3NcdfData();
     
     void readNcdf(S3MetaData& s3md);
+    void convRad2Refl();
     
 private:
     S3NcdfData(const S3NcdfData& orig){ throw std::logic_error("S3NcdfData shoudlnt be copied"); }           // disable copy construtor
@@ -49,7 +51,10 @@ private:
     void readImageProp(const netCDF::NcFile& ncF, ImageProperties* imgProp);
     void getVarAttSafely(S3BasicImage<short>* s3Img, netCDF::NcVar& imgVar);
     void getVarAttSafely(S3BasicImage<double>* s3Img, netCDF::NcVar& imgVar);
-    bool hasAtt(const netCDF::NcVar& var, const std::string& attName);};
+    bool hasAtt(const netCDF::NcVar& var, const std::string& attName);
+    void readIrrad(const S3MetaData& s3md, double irrad[][N_SLSTR_BANDS]);
+    
+};
 
 #endif /* S3NCDFDATA_H */
 

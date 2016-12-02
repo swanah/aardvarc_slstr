@@ -16,6 +16,8 @@
                                                           {"S1_radiance_ao", "S2_radiance_ao", "S3_radiance_ao", "S5_radiance_ao", "S6_radiance_ao"}};
     const std::string S3MetaData::CHANNEL_QUAL_NAME[][5] = {{"S1_quality_an", "S2_quality_an", "S3_quality_an", "S5_quality_an", "S6_quality_an"},
                                                            {"S1_quality_ao", "S2_quality_ao", "S3_quality_ao", "S5_quality_ao", "S6_quality_ao"}};
+    const std::string S3MetaData::CHANNEL_IRRAD_NAME[][5] = {{"S1_solar_irradiance_an", "S2_solar_irradiance_an", "S3_solar_irradiance_an", "S5_solar_irradiance_an", "S6_solar_irradiance_an"},
+                                                           {"S1_solar_irradiance_ao", "S2_solar_irradiance_ao", "S3_solar_irradiance_ao", "S5_solar_irradiance_ao", "S6_solar_irradiance_ao"}};
     const std::string S3MetaData::GEODETIC_NAME[] = {"geodetic_an", "geodetic_ao"};
     const std::string S3MetaData::LAT_NAME[] = {"latitude_an", "latitude_ao"};
     const std::string S3MetaData::LON_NAME[] = {"longitude_an", "longitude_ao"};

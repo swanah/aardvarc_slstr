@@ -17,5 +17,7 @@
 #define N_SLSTR_BANDS 5
 #define N_SLSTR_VIEWS 2
 
+#define N_DETECTORS 4
+
 #endif /* DEFS_HPP */
 

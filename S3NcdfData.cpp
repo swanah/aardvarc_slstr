@@ -12,6 +12,7 @@
  */
 
 #include <limits>
+#include <math.h>
 #include <netcdf>
 #include "Images.hpp"
 #include "Interpolation.hpp"
@@ -23,6 +24,7 @@ using std::cerr;
 using std::endl;
 using namespace netCDF;
 
+//public
 
 S3NcdfData::S3NcdfData() {
 }
@@ -34,6 +36,7 @@ void S3NcdfData::readNcdf(S3MetaData& s3md) {
     
     ImageProperties imgProp;
     readImageProp(&s3md, &imgProp);
+    readIrrad(s3md, s3Irrad);
     
     // reading nadir and oblique radiance images
     std::string ncdfName;
@@ -73,6 +76,28 @@ void S3NcdfData::readNcdf(S3MetaData& s3md) {
     readImg(ncdfName, s3md.LON_TPG_NAME, &s3TpgLonImg);
         
 }
+
+void S3NcdfData::convRad2Refl(){
+    int nPix = s3RadImgs[0][0].width * s3RadImgs[0][0].height;
+    double rad;
+    for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
+        for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+            double origScale = s3RadImgs[iView][iBand].valScale;
+            double origOffset = s3RadImgs[iView][iBand].valOffset;
+            s3RadImgs[iView][iBand].valScale = 1e-4;
+            s3RadImgs[iView][iBand].valOffset = 0;
+            for (int i = 0; i < nPix; i++){
+                if (s3RadImgs[iView][iBand].img[i] != s3RadImgs[iView][iBand].noData){
+                    rad = (double)(s3RadImgs[iView][iBand].img[i]) * origScale + origOffset;
+                    rad *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * M_PI / 180));
+                    s3RadImgs[iView][iBand].img[i] = (rad - s3RadImgs[iView][iBand].valOffset) / s3RadImgs[iView][iBand].valScale;
+                }
+            }
+        }
+    }
+}
+
+// private
 
 void S3NcdfData::readImg(const std::string& ncdfName, const std::string varName, S3BasicImage<short>* s3Img){
     cout << varName << endl;
@@ -358,5 +383,24 @@ bool S3NcdfData::hasAtt(const NcVar& var, const std::string& attName){
         return true;
     }
     return false;
+}
+
+void S3NcdfData::readIrrad(const S3MetaData& s3md, double irrad[][N_SLSTR_BANDS]){
+    std::string ncdfName;
+    double irval[N_DETECTORS];
+    for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
+        for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+            ncdfName = s3md.s3FileName + "/" + s3md.CHANNEL_QUAL_NAME[iView][iBand] + ".nc";
+            NcFile ncF(ncdfName, NcFile::read);
+            NcVar irradVar = ncF.getVar(s3md.CHANNEL_IRRAD_NAME[iView][iBand]);
+            irradVar.getVar(irval);
+            irrad[iView][iBand] = 0;
+            for (int i = 0; i < N_DETECTORS; i++){
+                irrad[iView][iBand] += irval[i];
+            }
+            irrad[iView][iBand] /= N_DETECTORS;
+            ncF.close();
+        }
+    }   
 }
 
