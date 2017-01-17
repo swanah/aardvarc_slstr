@@ -33,6 +33,7 @@
       <itemPath>S3MetaData.cpp</itemPath>
       <itemPath>S3NcdfData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
+      <itemPath>miscUtils.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -85,6 +86,8 @@
       <item path="defs.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="miscUtils.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
       </item>
@@ -140,6 +143,8 @@
       <item path="defs.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="miscUtils.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
       </item>

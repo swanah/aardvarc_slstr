@@ -6,9 +6,11 @@
  */
 
 #include <iostream>
+#include <typeinfo>
+
 #include "tinyxml/tinyxml.h"
-#include "S3MetaData.hpp"
 #include "miscUtils.hpp"
+#include "S3MetaData.hpp"
 
 /* const definition */
     const std::string S3MetaData::XFDU_MANIFEST_NAME = "xfdumanifest.xml";
@@ -30,6 +32,8 @@
     const std::string S3MetaData::VZA_NAME[] = {"sat_zenith_tn", "sat_zenith_to"};
     const std::string S3MetaData::VAA_NAME[] = {"sat_azimuth_tn", "sat_azimuth_to"};
     const std::string S3MetaData::FLAGS_NAME[] = {"flags_an", "flags_ao"};
+    const std::string S3MetaData::CONFID_NAME[] = {"confidence_an", "confidence_ao"};
+    const std::string S3MetaData::BASIC_CLOUD_NAME[] = {"cloud_an", "cloud_ao"};
     const std::string S3MetaData::TIME_NAME[] = {"time_an", "time_ao"};
     
     
@@ -99,6 +103,11 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
     }
     
     //TODO: assert i/o files exist and input is correct!!!
+    assertValidImgProp(slstrPInfo.nadirImg0500m);
+    assertValidImgProp(slstrPInfo.obliqImg0500m);
+    assertValidImgProp(slstrPInfo.nadirTpgImg);
+    assertValidImgProp(slstrPInfo.obliqTpgImg);
+    
 }
 
 /**
@@ -177,12 +186,18 @@ void S3MetaData::readSlstrProdInfo(TiXmlElement* slstrInfo){
             if ( strcmp( node->ToElement()->Attribute("grid"), "0.5 km stripe A" ) == 0 ) {
                 std::string s = node->FirstChild("slstr:spatialResolution")
                                       ->FirstChild()->ToText()->ValueStr();
-                slstrPInfo.res0500m = StringToNumber<int>(s);
+                slstrPInfo.nadirImg0500m.xRes = StringToNumber<int>(s);
+                slstrPInfo.nadirImg0500m.yRes = slstrPInfo.nadirImg0500m.xRes;
+                slstrPInfo.obliqImg0500m.xRes = slstrPInfo.nadirImg0500m.xRes;
+                slstrPInfo.obliqImg0500m.yRes = slstrPInfo.nadirImg0500m.yRes;
             }
             else if ( strcmp( node->ToElement()->Attribute("grid"), "Tie Points" ) == 0 ) {
                 std::string s = node->FirstChild("slstr:spatialResolution")
                                       ->FirstChild()->ToText()->ValueStr();
-                slstrPInfo.resTpg = StringToNumber<int>(s);
+                slstrPInfo.nadirTpgImg.xRes = StringToNumber<int>(s);
+                slstrPInfo.nadirTpgImg.yRes = 1000;
+                slstrPInfo.obliqTpgImg.xRes = slstrPInfo.nadirTpgImg.xRes;
+                slstrPInfo.obliqTpgImg.yRes = slstrPInfo.nadirTpgImg.yRes;
             }
         }
         else if ( strcmp( node->Value(), "slstr:nadirImageSize" ) == 0){
@@ -209,7 +224,7 @@ void S3MetaData::readSlstrProdInfo(TiXmlElement* slstrInfo){
  * @param node
  * @param imgInfo
  */
-void S3MetaData::readImageInfo(TiXmlNode* node, imageInfo* imgInfo){
+void S3MetaData::readImageInfo(TiXmlNode* node, ImageProperties* imgInfo){
     std::string s = node->FirstChild("sentinel3:startOffset")
             ->FirstChild()->ToText()->ValueStr();
     imgInfo->yOff = StringToNumber<int>(s);
@@ -222,5 +237,17 @@ void S3MetaData::readImageInfo(TiXmlNode* node, imageInfo* imgInfo){
     s = node->FirstChild("sentinel3:columns")
             ->FirstChild()->ToText()->ValueStr();
     imgInfo->width = StringToNumber<int>(s);
+    
+    imgInfo->nPix = imgInfo->width * imgInfo->height;
 }
 
+void S3MetaData::assertValidImgProp(const ImageProperties& imgProp){
+    if (  (imgProp.width <= 0) || (imgProp.height <= 0)
+            || (imgProp.xRes  <= 0) || (imgProp.yRes   <= 0)
+            || (imgProp.xOff  < 0) || (imgProp.yOff   < 0) ){
+
+        std::string msg(typeid(*this).name());
+        msg.append(": Image properties could not be read from manifest!\n");
+        throw std::domain_error(msg);
+    }
+}

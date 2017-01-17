@@ -17,29 +17,27 @@
 #include <cstddef>
 #include <iostream>
 #include <algorithm>
+#include <limits>
 
-typedef struct {
-    int width, height;
-    int xOff, yOff;
-    int xRes, yRes;
-} ImageProperties;
+#include "defs.hpp"
 
 
 template<class T>
 class S3BasicImage {
 public:
-    int width, height;
-    int xOff, yOff;
-    int xRes, yRes;
+    ImageProperties imgP;
     bool hasScale, hasOffset;
     double valScale, valOffset;
+    T validMin, validMax;
     T *img;
     bool hasNoData;
     T noData;
     std::string name;
 
     S3BasicImage();
-    S3BasicImage(const int& newWidth, const int& newHeight, const int& xOffset = 0, const int& yOffset = 0);
+    S3BasicImage(const int& newWidth, const int& newHeight, 
+                    const int& xOffset = 0, const int& yOffset = 0, 
+                    const int& xRes = 1, const int& yRes = 1);
     S3BasicImage(const ImageProperties& imgProp);
     S3BasicImage(const S3BasicImage& orig);
     S3BasicImage<T>& operator=(const S3BasicImage& rhs);
@@ -47,7 +45,10 @@ public:
     
     void setImgProperties(ImageProperties& imgProp);
     void getImgProperties(ImageProperties* imgProp);
-    
+    void setValidLimits(const T& min, const T& max);
+    bool isValidValue(const T& value);
+    void copyVarAttFrom(const S3BasicImage& srcImg);
+    void initImgArray(const T initVal = 0);
 };
 
 template<class T>
@@ -56,48 +57,47 @@ S3BasicImage<T>::S3BasicImage(){
 }
 
 template<class T>
-S3BasicImage<T>::S3BasicImage(const int& newWidth, const int& newHeight, const int& xOffset, const int& yOffset){
-    width = newWidth;
-    height = newHeight;
-    xOff = xOffset;
-    yOff = yOffset;
-    xRes = 500;
-    yRes = 500;
+S3BasicImage<T>::S3BasicImage(const int& newWidth, const int& newHeight, 
+                              const int& xOffset, const int& yOffset, 
+                              const int& xRes, const int& yRes){
+    imgP.width = newWidth;
+    imgP.height = newHeight;
+    imgP.nPix = newWidth * newHeight;
+    imgP.xOff = xOffset;
+    imgP.yOff = yOffset;
+    imgP.xRes = xRes;
+    imgP.yRes = yRes;
     hasScale = false;
     hasOffset = false;
     hasNoData = false;
-    img = new T[width*height];
+    validMin = std::numeric_limits<T>::min();
+    validMax = std::numeric_limits<T>::max();
+    img = new T[imgP.width * imgP.height];
 }
 
 template<class T>
-S3BasicImage<T>::S3BasicImage(const ImageProperties& imgProp){
-    width = imgProp.width;
-    height = imgProp.height;
-    xOff = imgProp.xOff;
-    yOff = imgProp.yOff;
-    xRes = imgProp.xRes;
-    yRes = imgProp.yRes;
+S3BasicImage<T>::S3BasicImage(const ImageProperties& newImgProp){
+    imgP = newImgProp;
     hasScale = false;
     hasOffset = false;
     hasNoData = false;
-    img = new T[width*height];
+    validMin = std::numeric_limits<T>::min();
+    validMax = std::numeric_limits<T>::max();
+    img = new T[imgP.width * imgP.height];
 }
 
 template<class T>
 S3BasicImage<T>::S3BasicImage(const S3BasicImage& orig) {
-    width = orig.width;
-    height = orig.height;
-    xOff = orig.xOff;
-    yOff = orig.yOff;
-    xRes = orig.xRes;
-    yRes = orig.yRes;
+    imgP = orig.imgP;
     hasScale = orig.hasScale;
     valScale = orig.valOffset;
     hasOffset = orig.hasOffset;
     valOffset = orig.valOffset;
     hasNoData = orig.hasNoData;
     noData = orig.noData;
-    int n = width*height;
+    validMin = orig.validMin;
+    validMax = orig.validMax;
+    int n = imgP.width*imgP.height;
     img = new T[n];
     for (int i=0; i<n; i++) img[i] = orig.img[i];
     name = orig.name;
@@ -109,18 +109,15 @@ S3BasicImage<T>& S3BasicImage<T>::operator=(const S3BasicImage& rhs) {
     if (this == &rhs) // Same object?
         return *this; // Yes, so skip assignment, and just return *this.
     S3BasicImage lhs(rhs);
-    std::swap(width, lhs.width);
-    std::swap(height, lhs.height);
-    std::swap(xOff, lhs.xOff);
-    std::swap(yOff, lhs.yOff);
-    std::swap(xRes, lhs.xRes);
-    std::swap(yRes, lhs.yRes);
+    std::swap(imgP, lhs.imgP);
     std::swap(hasScale, lhs.hasScale);
     std::swap(valScale, lhs.valScale);
     std::swap(hasOffset, lhs.hasOffset);
     std::swap(valOffset, lhs.valOffset);
     std::swap(hasNoData, lhs.hasNoData);
     std::swap(noData, lhs.noData);
+    std::swap(validMin, lhs.validMin);
+    std::swap(validMax, lhs.validMax);
     std::swap(img, lhs.img);
     std::swap(name, lhs.name);
     return *this;
@@ -137,26 +134,46 @@ S3BasicImage<T>::~S3BasicImage(){
 
 template<class T>
 inline void S3BasicImage<T>::setImgProperties(ImageProperties& imgProp){
-    width  = imgProp.width;
-    height = imgProp.height;
-    xOff   = imgProp.xOff;
-    yOff   = imgProp.yOff;
-    xRes   = imgProp.xRes;
-    yRes   = imgProp.yRes;
+    imgP = imgProp;
 }
 
 template<class T>
 inline void S3BasicImage<T>::getImgProperties(ImageProperties* imgProp){
-    imgProp->width  = width;
-    imgProp->height = height;
-    imgProp->xOff   = xOff;
-    imgProp->yOff   = yOff;
-    imgProp->xRes   = xRes;
-    imgProp->yRes   = yRes;
+    imgProp->width  = imgP.width;
+    imgProp->height = imgP.height;
+    imgProp->nPix = imgP.nPix;
+    imgProp->xOff   = imgP.xOff;
+    imgProp->yOff   = imgP.yOff;
+    imgProp->xRes   = imgP.xRes;
+    imgProp->yRes   = imgP.yRes;
 }
 
+template<class T>
+inline void S3BasicImage<T>::setValidLimits(const T& min, const T& max){
+    validMin = min;
+    validMax = max;
+}
 
+template<class T>
+inline bool S3BasicImage<T>::isValidValue(const T& value){
+    return ((value >= validMin) && (value <= validMax) && (hasNoData?(value != noData):true));
+}
 
+template<class T>
+inline void S3BasicImage<T>::copyVarAttFrom(const S3BasicImage& srcImg){
+    hasNoData = srcImg.hasNoData;
+    noData = srcImg.noData;
+    hasOffset = srcImg.hasOffset;
+    valOffset = srcImg.valOffset;
+    hasScale = srcImg.hasScale;
+    valScale = srcImg.valScale;
+    validMin = srcImg.validMin;
+    validMax = srcImg.validMax;
+}
 
+template<class T>
+inline void S3BasicImage<T>::initImgArray(const T initVal){
+    for (int i=0; i<imgP.nPix; i++) img[i] = initVal;
+}
 #endif /* IMAGES_HPP */
 

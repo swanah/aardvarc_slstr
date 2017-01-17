@@ -30,22 +30,19 @@ public:
     
     string parFileName;
     string slstrProductDir;
-    S3MetaData s3MetaData;
-    string aodOutDir, aodOutName;
+    string aodOutDir;
     string atmLutFileName;
     string ocnLutFileName;
     string climFileName;
     
     float cloudFraction;
-    int winsize, offset, skip;
+    int winSize, offset, skip;
+    float szaLimit;
+    float binValidThrs;
     
 private:
     InputParameter(const InputParameter& orig){}                // disable copy constructor
     InputParameter& operator=(const InputParameter& rightVal){} // disable copy assignment
-
-    void modifyAodOutNames();
-    void replaceStringInPlace(std::string& subject, 
-                          const std::string& search, const std::string& replace);
 };
 
 inline InputParameter::~InputParameter(){}

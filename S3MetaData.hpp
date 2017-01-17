@@ -10,12 +10,8 @@
 
 #include <iostream>
 #include "tinyxml/tinyxml.h"
+#include "defs.hpp"
 
-    typedef struct {
-        int width, height;
-        int xOff, yOff;
-    } imageInfo;
-    
 
     class S3MetaData {                          // begin declaration of class
     public:                                     // begin public section
@@ -31,10 +27,8 @@
         std::string timeliness, baselineColl, creaTime;
         std::string prodUnitType, prodUnitDuration, prodUnitAlongTrackCoord;
         struct{
-            int res0500m;
-            int resTpg;
-            imageInfo nadirImg0500m, obliqImg0500m;
-            imageInfo nadirTpgImg, obliqTpgImg;
+            ImageProperties nadirImg0500m, obliqImg0500m;
+            ImageProperties nadirTpgImg, obliqTpgImg;
             int ncdfXoff, ncdfYoff;
         } slstrPInfo;
         
@@ -54,6 +48,8 @@
         static const std::string VZA_NAME[];
         static const std::string VAA_NAME[];
         static const std::string FLAGS_NAME[];
+        static const std::string CONFID_NAME[];
+        static const std::string BASIC_CLOUD_NAME[];
         static const std::string TIME_NAME[];
         
     private:
@@ -64,7 +60,8 @@
         void readPlatformInfo(TiXmlElement* pf);
         void readGenProdInfo(TiXmlElement* genPInfo);
         void readSlstrProdInfo(TiXmlElement* slstrInfo);
-        void readImageInfo(TiXmlNode* node, imageInfo* imgInfo);
+        void readImageInfo(TiXmlNode* node, ImageProperties* imgInfo);
+        void assertValidImgProp(const ImageProperties& imgProp);
 
     };
 

@@ -39,6 +39,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/S3MetaData.o \
 	${OBJECTDIR}/S3NcdfData.o \
 	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/miscUtils.o \
 	${OBJECTDIR}/tinyxml/tinystr.o \
 	${OBJECTDIR}/tinyxml/tinyxml.o \
 	${OBJECTDIR}/tinyxml/tinyxmlerror.o \
@@ -88,6 +89,11 @@ ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g `pkg-config --cflags netcdf-cxx4` `pkg-config --cflags boost_filesystem`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/miscUtils.o: miscUtils.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g `pkg-config --cflags netcdf-cxx4` `pkg-config --cflags boost_filesystem`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/miscUtils.o miscUtils.cpp
 
 ${OBJECTDIR}/tinyxml/tinystr.o: tinyxml/tinystr.cpp 
 	${MKDIR} -p ${OBJECTDIR}/tinyxml
