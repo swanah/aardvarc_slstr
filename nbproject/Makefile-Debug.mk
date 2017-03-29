@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/AeroClimatology.o \
 	${OBJECTDIR}/InputParameter.o \
 	${OBJECTDIR}/S3MetaData.o \
 	${OBJECTDIR}/S3NcdfData.o \
@@ -69,6 +70,11 @@ LDLIBSOPTIONS=`pkg-config --libs netcdf-cxx4` `pkg-config --libs boost_filesyste
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/aardvarc_slstr.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/aardvarc_slstr ${OBJECTFILES} ${LDLIBSOPTIONS}
+
+${OBJECTDIR}/AeroClimatology.o: AeroClimatology.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g `pkg-config --cflags netcdf-cxx4` `pkg-config --cflags boost_filesystem`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AeroClimatology.o AeroClimatology.cpp
 
 ${OBJECTDIR}/InputParameter.o: InputParameter.cpp 
 	${MKDIR} -p ${OBJECTDIR}

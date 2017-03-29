@@ -8,6 +8,7 @@
         <itemPath>tinyxml/tinystr.h</itemPath>
         <itemPath>tinyxml/tinyxml.h</itemPath>
       </logicalFolder>
+      <itemPath>AeroClimatology.hpp</itemPath>
       <itemPath>Images.hpp</itemPath>
       <itemPath>InputParameter.hpp</itemPath>
       <itemPath>Interpolation.hpp</itemPath>
@@ -29,6 +30,7 @@
         <itemPath>tinyxml/tinyxmlerror.cpp</itemPath>
         <itemPath>tinyxml/tinyxmlparser.cpp</itemPath>
       </logicalFolder>
+      <itemPath>AeroClimatology.cpp</itemPath>
       <itemPath>InputParameter.cpp</itemPath>
       <itemPath>S3MetaData.cpp</itemPath>
       <itemPath>S3NcdfData.cpp</itemPath>
@@ -67,6 +69,10 @@
           </linkerLibItems>
         </linkerTool>
       </compileType>
+      <item path="AeroClimatology.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="AeroClimatology.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Images.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="InputParameter.cpp" ex="false" tool="1" flavor2="0">
@@ -124,6 +130,10 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="AeroClimatology.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="AeroClimatology.hpp" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="Images.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="InputParameter.cpp" ex="false" tool="1" flavor2="0">

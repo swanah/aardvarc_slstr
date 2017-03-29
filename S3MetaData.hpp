@@ -18,6 +18,7 @@
         S3MetaData(){}
         ~S3MetaData();                          // destructor (empty dtor inlined below)
         void parseManifest(const std::string& s3ProdDir);
+        int getMonth();
 
         std::string s3FileName;
         std::string productName, productType;

@@ -111,6 +111,16 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
 }
 
 /**
+ * provide month of startTime as Integer
+ * @return month of year (startTime)
+ */
+int S3MetaData::getMonth(){
+    // expecting startTime to be of format yyyy-MM-ddThh:mm:ss.sssssZ
+    int month = StringToNumber<int>(startTime.substr(5, 2));
+    return month;
+}
+
+/**
  * read acquitsition time information from sentinel 3 safe manifest
  * @param acquiTime - pointing to TiXmlElement
  */

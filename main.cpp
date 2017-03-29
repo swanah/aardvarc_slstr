@@ -20,6 +20,7 @@
 #include "Images.hpp"
 #include "Interpolation.hpp"
 #include "miscUtils.hpp"
+#include "AeroClimatology.hpp"
 
 using std::cout;
 using std::cerr;
@@ -49,11 +50,17 @@ int main(int argc, char** argv) {
         /* reading nadir and oblique radiance images */
         //s3Data.readNcdf(s3md);
         t1 = timer();
-        s3Data.readNcdf(outImgProp);
+        //s3Data.readNcdf(outImgProp);
         t2 = timer();
         printf("Runtime %f seconds\n", t2 - t1);
-        s3Data.convRad2Refl();
-        s3Data.verifyInput();
+        //s3Data.convRad2Refl();
+        //s3Data.verifyInput();
+        
+        // read aerosol climatology
+        AeroClimatology aerClim(pars.climFileName, s3Data.s3MetaData.getMonth());
+        
+        // read ocean LUT
+        
                 
         /* writing radiance data to ncdf file */
         t1 = timer();
