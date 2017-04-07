@@ -45,6 +45,8 @@ public:
     
     void setImgProperties(ImageProperties& imgProp);
     void getImgProperties(ImageProperties* imgProp);
+    void setFillVal(const T& fillVal);
+    void setScaleOffset(const double& scale, const double& offset);
     void setValidLimits(const T& min, const T& max);
     bool isValidValue(const T& value);
     void copyVarAttFrom(const S3BasicImage& srcImg);
@@ -146,6 +148,20 @@ inline void S3BasicImage<T>::getImgProperties(ImageProperties* imgProp){
     imgProp->yOff   = imgP.yOff;
     imgProp->xRes   = imgP.xRes;
     imgProp->yRes   = imgP.yRes;
+}
+
+template<class T>
+inline void S3BasicImage<T>::setFillVal(const T& fillVal){
+    hasNoData = true;
+    noData = fillVal;
+}
+
+template<class T>
+void S3BasicImage<T>::setScaleOffset(const double& scale, const double& offset){
+    hasScale = true;
+    valScale = scale;
+    hasOffset = true;
+    valOffset = offset;
 }
 
 template<class T>

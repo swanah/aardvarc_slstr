@@ -12,7 +12,7 @@
  */
 
 #include <limits>
-#include <math.h>
+#include <cmath>
 #include <netcdf>
 #include <sys/_intsup.h>
 #include "Images.hpp"
@@ -25,7 +25,43 @@ using std::cerr;
 using std::endl;
 using namespace netCDF;
 
+/* const definitions */
+    const std::string S3NcdfData::SDR_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_SDR_n", "S2_SDR_n", "S3_SDR_n", "S5_SDR_n", "S6_SDR_n"},
+        {"S1_SDR_o", "S2_SDR_o", "S3_SDR_o", "S5_SDR_o", "S6_SDR_o"}
+    };
+    const std::string S3NcdfData::RPATH_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_rPath_n", "S2_rPath_n", "S3_rPath_n", "S5_rPath_n", "S6_rPath_n"},
+        {"S1_rPath_o", "S2_rPath_o", "S3_rPath_o", "S5_rPath_o", "S6_rPath_o"}
+    };
+    const std::string S3NcdfData::TDOWN_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_tDown_n", "S2_tDown_n", "S3_tDown_n", "S5_tDown_n", "S6_tDown_n"},
+        {"S1_tDown_o", "S2_tDown_o", "S3_tDown_o", "S5_tDown_o", "S6_tDown_o"}
+    };
+    const std::string S3NcdfData::TUP_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_tUp_n", "S2_tUp_n", "S3_tUp_n", "S5_tUp_n", "S6_tUp_n"},
+        {"S1_tUp_o", "S2_tUp_o", "S3_tUp_o", "S5_tUp_o", "S6_tUp_o"}
+    };
+    const std::string S3NcdfData::TGAS_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_tGas_n", "S2_tGas_n", "S3_tGas_n", "S5_tGas_n", "S6_tGas_n"},
+        {"S1_tGas_o", "S2_tGas_o", "S3_tGas_o", "S5_tGas_o", "S6_tGas_o"}
+    };
+    const std::string S3NcdfData::SPHERA_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_SpherA_n", "S2_SpherA_n", "S3_SpherA_n", "S5_SpherA_n", "S6_SpherA_n"},
+        {"S1_SpherA_o", "S2_SpherA_o", "S3_SpherA_o", "S5_SpherA_o", "S6_SpherA_o"}
+    };
+    const std::string S3NcdfData::DIFFRAC_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+        {"S1_DifFrac_n", "S2_DifFrac_n", "S3_DifFrac_n", "S5_DifFrac_n", "S6_DifFrac_n"},
+        {"S1_DifFrac_o", "S2_DifFrac_o", "S3_DifFrac_o", "S5_DifFrac_o", "S6_DifFrac_o"}
+    };
+
+    const std::string S3NcdfData::AOD_NAMES[N_SLSTR_BANDS] = {"AOD_0550", "AOD_0659", "AOD_0865", "AOD_1610", "AOD_2250"};
+    const std::string S3NcdfData::AER_FRAC_NAMES[3] = {"fineOfTotal", "weakAbsOfFine", "dustOfCoarse"};
+
+    
+//
 //public
+//
 
 S3NcdfData::S3NcdfData(const InputParameter& inPar){
     s3DataDir = inPar.slstrProductDir;
@@ -106,7 +142,7 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
         //read img and bin to output image properties
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
             s3RadImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
-            s3RadImgs[iView][iBand].setValidLimits(0, 10000);
+            s3RadImgs[iView][iBand].setValidLimits(0, 20000);
             ncdfName = s3MetaData.s3FileName + "/" + s3MetaData.CHANNEL_RAD_NAME[iView][iBand] + ".nc";
             readImgBinned(&s3RadImgs[iView][iBand], ncdfName, s3MetaData.CHANNEL_RAD_NAME[iView][iBand], imgType);
         }
@@ -151,6 +187,7 @@ void S3NcdfData::convRad2Refl(){
             s3RadImgs[iView][iBand].valScale = 1e-4;
             s3RadImgs[iView][iBand].valOffset = 0;
             s3RadImgs[iView][iBand].noData = -10000;
+            replaceStringInPlace(s3RadImgs[iView][iBand].name, "radiance", "reflec");
             for (int i = 0; i < s3RadImgs[iView][iBand].imgP.nPix; i++){
                 if (s3RadImgs[iView][iBand].img[i] != origNoData){
                     rad = (double)(s3RadImgs[iView][iBand].img[i]) * origScale + origOffset;
@@ -222,9 +259,116 @@ void S3NcdfData::verifyInput(){
     }
 }
 
+void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
+    for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
+        s3AodImgs[iBand] = S3BasicImage<float>(outImgProp);
+        s3AodImgs[iBand].name = AOD_NAMES[iBand];
+        s3AodImgs[iBand].setFillVal((float)(-1));
+        s3AodImgs[iBand].initImgArray((float)(-1));
+        for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
+            s3SdrImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
+            s3SdrImgs[iView][iBand].name = SDR_NAMES[iView][iBand];
+            s3SdrImgs[iView][iBand].setFillVal((short)(-30000));
+            s3SdrImgs[iView][iBand].initImgArray((short)(-30000));
+            s3SdrImgs[iView][iBand].setScaleOffset(1e-4, 0);
+            s3SdrImgs[iView][iBand].setValidLimits(-10000, 20000);
+            
+            s3RPathImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3RPathImgs[iView][iBand].name = RPATH_NAMES[iView][iBand];
+            s3RPathImgs[iView][iBand].setFillVal((float)(-1));
+            s3RPathImgs[iView][iBand].initImgArray((float)(-1));
+            
+            s3TDownImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3TDownImgs[iView][iBand].name = TDOWN_NAMES[iView][iBand];
+            s3TDownImgs[iView][iBand].setFillVal((float)(-1));
+            s3TDownImgs[iView][iBand].initImgArray((float)(-1));
+            
+            s3TUpImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3TUpImgs[iView][iBand].name = TUP_NAMES[iView][iBand];
+            s3TUpImgs[iView][iBand].setFillVal((float)(-1));
+            s3TUpImgs[iView][iBand].initImgArray((float)(-1));
+            
+            s3TGasImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3TGasImgs[iView][iBand].name = TGAS_NAMES[iView][iBand];
+            s3TGasImgs[iView][iBand].setFillVal((float)(-1));
+            s3TGasImgs[iView][iBand].initImgArray((float)(-1));
+            
+            s3SpherAImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3SpherAImgs[iView][iBand].name = SPHERA_NAMES[iView][iBand];
+            s3SpherAImgs[iView][iBand].setFillVal((float)(-1));
+            s3SpherAImgs[iView][iBand].initImgArray((float)(-1));
+            
+            s3DifFracImgs[iView][iBand] = S3BasicImage<float>(outImgProp);
+            s3DifFracImgs[iView][iBand].name = DIFFRAC_NAMES[iView][iBand];
+            s3DifFracImgs[iView][iBand].setFillVal((float)(-1));
+            s3DifFracImgs[iView][iBand].initImgArray((float)(-1));
+            
+        }
+    }
+    for (int i = 0; i < 3; i++){
+        s3AerFracImgs[i] = S3BasicImage<float>(outImgProp);
+        s3AerFracImgs[i].name = AER_FRAC_NAMES[i];
+        s3AerFracImgs[i].setFillVal((float)(-1));
+        s3AerFracImgs[i].initImgArray((float)(-1));
+    }
+}
 
+bool S3NcdfData::isValidPixel(const int& idx){
+    return ((flags.img[idx] & 15) >= 3);
+}
+
+void S3NcdfData::getGeoPos(const int& idx, GeoPos* gp){
+    gp->lat = s3LatImgs[0].img[idx];
+    gp->lon = s3LonImgs[0].img[idx];
+}
+
+void S3NcdfData::getViewGeom(const int& idx, ViewGeom* vg){
+    vg->nad_sol_zen  = s3SzaImgs[0].img[idx];
+    vg->nad_sol_azim = s3SaaImgs[0].img[idx];
+    vg->nad_sat_zen  = s3VzaImgs[0].img[idx];
+    vg->nad_sat_azim = s3VaaImgs[0].img[idx];
+    vg->razn = fabsf(vg->nad_sat_azim - vg->nad_sol_azim);
+    if (vg->razn > 180.0) vg->razn = 360.0 - vg->razn;
+
+    vg->for_sol_zen  = s3SzaImgs[1].img[idx];
+    vg->for_sol_azim = s3SaaImgs[1].img[idx];
+    vg->for_sat_zen  = s3VzaImgs[1].img[idx];
+    vg->for_sat_azim = s3VaaImgs[1].img[idx];
+    vg->razf = fabsf(vg->for_sat_azim - vg->for_sol_azim);
+    if (vg->razf > 180.0) vg->razf = 360.0 - vg->razf;
+}
+
+void S3NcdfData::getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]){
+    for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
+        for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
+            tarr[iBand][iView] = s3RadImgs[iView][iBand].img[idx] * s3RadImgs[iView][iBand].valScale + s3RadImgs[iView][iBand].valOffset;
+        }
+    }
+}
+
+void S3NcdfData::setRetrievalResults(const int& idx, const SlstrPixel& pix){
+    for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
+        s3AodImgs[iBand].img[idx] = pix.aod;
+        for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
+            if (pix.view_clear[iView]){
+                s3SdrImgs[iView][iBand].img[idx] = (short)((pix.RR[iBand][iView] - s3SdrImgs[iView][iBand].valOffset) / s3SdrImgs[iView][iBand].valScale);
+                s3RPathImgs[iView][iBand].img[idx] = pix.inv_coef[iBand][iView].rPath;
+                s3TDownImgs[iView][iBand].img[idx] = pix.inv_coef[iBand][iView].tDown;
+                s3TUpImgs[iView][iBand].img[idx]   = pix.inv_coef[iBand][iView].tUp;
+                s3TGasImgs[iView][iBand].img[idx]  = pix.inv_coef[iBand][iView].tGas;
+                s3SpherAImgs[iView][iBand].img[idx]  = pix.inv_coef[iBand][iView].spherAlb;
+                s3DifFracImgs[iView][iBand].img[idx] = pix.inv_coef[iBand][iView].difFrac;
+            }
+        }
+    }
+    s3AerFracImgs[0].img[idx] = pix.lutpars.mix_frac[0];
+    s3AerFracImgs[1].img[idx] = pix.lutpars.mix_frac[1];
+    s3AerFracImgs[2].img[idx] = pix.lutpars.mix_frac[2];
+}
+
+//
 // private
-
+//
 void S3NcdfData::setAodDataDir(const InputParameter& inPar, const S3MetaData& s3MetaData){
     std::string yyyy = s3MetaData.startTime.substr(0, 4);
     std::string mm = s3MetaData.startTime.substr(5, 2);

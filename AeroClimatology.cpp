@@ -13,6 +13,7 @@
 
 #include <netcdf>
 #include "AeroClimatology.hpp"
+#include "defs.hpp"
 
 using namespace netCDF;
 
@@ -64,3 +65,36 @@ AeroClimatology::~AeroClimatology() {
     fineOfTotal = NULL;
 }
 
+void AeroClimatology::getMixPercentages(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod) {
+    int ilat = (int) ((gp.lat - lat_start) / dlat);
+    int ilon = (int) ((gp.lon - lon_start) / dlon);
+
+    int index;
+    float fot, wof, doc;
+
+    if (ilat == ny) ilat--;
+    if (ilon == nx) ilon--;
+    if (ilat < 0 || ilat > ny || ilon < 0 || ilon > nx) {
+        throw std::runtime_error("Error lat/lon index for climatology out of bounds!");
+    }
+
+    index = ilat * nx + ilon;
+    fot = fineOfTotal[index];
+    fot = (fot>0) ? fot : 0.05;
+    fot = (fot<1) ? fot : 0.95;
+    wof = weakOfFine[index];
+    //wof = wof + 0.5 * ( 1 - wof );
+    //wof = 0.95;
+    doc = dustOfCoarse[index];
+    //doc = 0.5 * clim->dustOfCoarse[index];
+    
+    *climAod = aod[index];
+    mixFrac[0] = fot; 
+    mixFrac[1] = wof; 
+    mixFrac[2] = doc;
+
+    mixPercentages[0] = ((1 - fot) * doc)*100; // Dust
+    mixPercentages[1] = ((1 - fot) * (1 - doc))*100; // Sea Salt
+    mixPercentages[2] = (fot * (1 - wof))*100; // Strong Abs
+    mixPercentages[3] = (fot * wof)*100; // Weak Abs
+}

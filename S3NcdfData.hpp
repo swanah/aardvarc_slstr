@@ -27,10 +27,10 @@ public:
     std::string aodDataDir, aodOutName;
     S3MetaData s3MetaData;
 
-    S3BasicImage<signed char>   s3LandImg;
-    S3BasicImage<signed char>   s3CloudImg;
-    S3BasicImage<signed char>   s3ValidImg;
-    S3BasicImage<short>  s3RadImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    S3BasicImage<signed char>   s3LandImg;  //L1b nadir resolution image of land mask
+    S3BasicImage<signed char>   s3CloudImg; //L1b nadir resolution image of cloud mask
+    S3BasicImage<signed char>   s3ValidImg; //L1b nadir resolution image of valid mask
+    S3BasicImage<short>  s3RadImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // TOA reflec images [views][bands]
     S3BasicImage<double> s3LatImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3LonImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3TpgLatImg;
@@ -39,9 +39,31 @@ public:
     S3BasicImage<double> s3SaaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VzaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VaaImgs[N_SLSTR_VIEWS];
-    S3BasicImage<short>  flags;
+    S3BasicImage<short>  flags; // retrieval resolution flag image
+    S3BasicImage<short>  s3SdrImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // SDR images [views][bands]
+    S3BasicImage<float>  s3AodImgs[N_SLSTR_BANDS];                // AOD images [bands]
+    S3BasicImage<float>  s3AerFracImgs[3];                        // fine_of_total, weak_of_fine, dust_of_coarse
+    S3BasicImage<float>  s3RPathImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // rPath images [views][bands]
+    S3BasicImage<float>  s3TDownImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // downw. transm images [views][bands]
+    S3BasicImage<float>  s3TUpImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];   // upw. transm images [views][bands]
+    S3BasicImage<float>  s3TGasImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];  // gas transm images [views][bands]
+    S3BasicImage<float>  s3SpherAImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // spher Albedo images [views][bands]
+    S3BasicImage<float>  s3DifFracImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // diffuse Frac images [views][bands]
 
     double s3Irrad[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    
+    static const std::string SDR_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+
+    static const std::string RPATH_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string TDOWN_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string TUP_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string TGAS_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string SPHERA_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string DIFFRAC_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+
+    static const std::string AOD_NAMES[N_SLSTR_BANDS];
+    static const std::string AER_FRAC_NAMES[3];
+    
     S3NcdfData(const InputParameter& inPar);
     ~S3NcdfData();
     
@@ -49,6 +71,12 @@ public:
     void readNcdf(const ImageProperties& outImgProp);
     void convRad2Refl();
     void verifyInput();
+    void initResultImgs(const ImageProperties& outImgProp);
+    bool isValidPixel(const int& idx);
+    void getGeoPos(const int& idx, GeoPos* gp);
+    void getViewGeom(const int& idx, ViewGeom* vg);
+    void getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]);
+    void setRetrievalResults(const int& idx, const SlstrPixel& pix);
     
 private:
     

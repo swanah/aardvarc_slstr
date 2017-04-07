@@ -26,6 +26,9 @@ public:
 
     AeroClimatology(const std::string climName, const int month);
     ~AeroClimatology();
+    
+    void getMixPercentages(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod);
+    
 private:
     AeroClimatology();
     AeroClimatology(const AeroClimatology& orig);           // disable copy contructor

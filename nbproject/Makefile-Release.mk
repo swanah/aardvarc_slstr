@@ -36,7 +36,9 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/AeroClimatology.o \
+	${OBJECTDIR}/AtmosphericLut.o \
 	${OBJECTDIR}/InputParameter.o \
+	${OBJECTDIR}/OceanReflLut.o \
 	${OBJECTDIR}/S3MetaData.o \
 	${OBJECTDIR}/S3NcdfData.o \
 	${OBJECTDIR}/main.o \
@@ -76,10 +78,20 @@ ${OBJECTDIR}/AeroClimatology.o: AeroClimatology.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AeroClimatology.o AeroClimatology.cpp
 
+${OBJECTDIR}/AtmosphericLut.o: AtmosphericLut.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AtmosphericLut.o AtmosphericLut.cpp
+
 ${OBJECTDIR}/InputParameter.o: InputParameter.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/InputParameter.o InputParameter.cpp
+
+${OBJECTDIR}/OceanReflLut.o: OceanReflLut.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OceanReflLut.o OceanReflLut.cpp
 
 ${OBJECTDIR}/S3MetaData.o: S3MetaData.cpp 
 	${MKDIR} -p ${OBJECTDIR}
