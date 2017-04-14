@@ -52,16 +52,16 @@ public:
 
     double s3Irrad[N_SLSTR_VIEWS][N_SLSTR_BANDS];
     
-    static const std::string SDR_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string SDR_NAMES[N_SLSTR_VIEWS][5];
 
-    static const std::string RPATH_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
-    static const std::string TDOWN_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
-    static const std::string TUP_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
-    static const std::string TGAS_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
-    static const std::string SPHERA_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
-    static const std::string DIFFRAC_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    static const std::string RPATH_NAMES[N_SLSTR_VIEWS][5];
+    static const std::string TDOWN_NAMES[N_SLSTR_VIEWS][5];
+    static const std::string TUP_NAMES[N_SLSTR_VIEWS][5];
+    static const std::string TGAS_NAMES[N_SLSTR_VIEWS][5];
+    static const std::string SPHERA_NAMES[N_SLSTR_VIEWS][5];
+    static const std::string DIFFRAC_NAMES[N_SLSTR_VIEWS][5];
 
-    static const std::string AOD_NAMES[N_SLSTR_BANDS];
+    static const std::string AOD_NAMES[5];
     static const std::string AER_FRAC_NAMES[3];
     
     S3NcdfData(const InputParameter& inPar);
@@ -79,7 +79,7 @@ public:
     void setRetrievalResults(const int& idx, const SlstrPixel& pix);
     
 private:
-    
+    int offCorr[2];
     enum NcdfImageType {Nadir0500, Obliq0500, NadirTpg, ObliqTpg}; 
     
     S3NcdfData();
@@ -120,6 +120,7 @@ private:
     void createLandMask();
     void createCloudMask();
     void createValidMask();
+    void corrTpg(S3BasicImage<double>& tpg);
 };
 
 #endif /* S3NCDFDATA_H */

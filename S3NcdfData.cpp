@@ -26,36 +26,36 @@ using std::endl;
 using namespace netCDF;
 
 /* const definitions */
-    const std::string S3NcdfData::SDR_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::SDR_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_SDR_n", "S2_SDR_n", "S3_SDR_n", "S5_SDR_n", "S6_SDR_n"},
         {"S1_SDR_o", "S2_SDR_o", "S3_SDR_o", "S5_SDR_o", "S6_SDR_o"}
     };
-    const std::string S3NcdfData::RPATH_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::RPATH_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_rPath_n", "S2_rPath_n", "S3_rPath_n", "S5_rPath_n", "S6_rPath_n"},
         {"S1_rPath_o", "S2_rPath_o", "S3_rPath_o", "S5_rPath_o", "S6_rPath_o"}
     };
-    const std::string S3NcdfData::TDOWN_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::TDOWN_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_tDown_n", "S2_tDown_n", "S3_tDown_n", "S5_tDown_n", "S6_tDown_n"},
         {"S1_tDown_o", "S2_tDown_o", "S3_tDown_o", "S5_tDown_o", "S6_tDown_o"}
     };
-    const std::string S3NcdfData::TUP_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::TUP_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_tUp_n", "S2_tUp_n", "S3_tUp_n", "S5_tUp_n", "S6_tUp_n"},
         {"S1_tUp_o", "S2_tUp_o", "S3_tUp_o", "S5_tUp_o", "S6_tUp_o"}
     };
-    const std::string S3NcdfData::TGAS_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::TGAS_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_tGas_n", "S2_tGas_n", "S3_tGas_n", "S5_tGas_n", "S6_tGas_n"},
         {"S1_tGas_o", "S2_tGas_o", "S3_tGas_o", "S5_tGas_o", "S6_tGas_o"}
     };
-    const std::string S3NcdfData::SPHERA_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::SPHERA_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_SpherA_n", "S2_SpherA_n", "S3_SpherA_n", "S5_SpherA_n", "S6_SpherA_n"},
         {"S1_SpherA_o", "S2_SpherA_o", "S3_SpherA_o", "S5_SpherA_o", "S6_SpherA_o"}
     };
-    const std::string S3NcdfData::DIFFRAC_NAMES[N_SLSTR_VIEWS][N_SLSTR_BANDS] = {
+    const std::string S3NcdfData::DIFFRAC_NAMES[N_SLSTR_VIEWS][5] = {
         {"S1_DifFrac_n", "S2_DifFrac_n", "S3_DifFrac_n", "S5_DifFrac_n", "S6_DifFrac_n"},
         {"S1_DifFrac_o", "S2_DifFrac_o", "S3_DifFrac_o", "S5_DifFrac_o", "S6_DifFrac_o"}
     };
 
-    const std::string S3NcdfData::AOD_NAMES[N_SLSTR_BANDS] = {"AOD_0550", "AOD_0659", "AOD_0865", "AOD_1610", "AOD_2250"};
+    const std::string S3NcdfData::AOD_NAMES[5] = {"AOD_0550", "AOD_0659", "AOD_0865", "AOD_1610", "AOD_2250"};
     const std::string S3NcdfData::AER_FRAC_NAMES[3] = {"fineOfTotal", "weakAbsOfFine", "dustOfCoarse"};
 
     
@@ -124,7 +124,8 @@ S3NcdfData::~S3NcdfData() {
 }*/
 
 void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
-    
+    float wvl[] = {555., 659., 865., 1610., 2250.};
+    offCorr[0] = offCorr[1] = 0;
     readIrrad(s3Irrad);
     createLandMask();
     createCloudMask();
@@ -144,6 +145,18 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
             s3RadImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
             s3RadImgs[iView][iBand].setValidLimits(0, 20000);
             ncdfName = s3MetaData.s3FileName + "/" + s3MetaData.CHANNEL_RAD_NAME[iView][iBand] + ".nc";
+            /**
+            if (iView == 1 && iBand < 3){
+                offCorr[0] = -1; offCorr[1] = 2;
+            }
+            else if (iView == 0 && iBand > 2){
+                offCorr[0] = 1; offCorr[1] = 0;
+            }
+            else if (iView == 1 && iBand > 2){
+                offCorr[0] = -3; offCorr[1] = 2;
+            }
+            **/
+            s3RadImgs[iView][iBand].wvl = wvl[iBand];
             readImgBinned(&s3RadImgs[iView][iBand], ncdfName, s3MetaData.CHANNEL_RAD_NAME[iView][iBand], imgType);
         }
 
@@ -358,6 +371,7 @@ void S3NcdfData::setRetrievalResults(const int& idx, const SlstrPixel& pix){
                 s3TGasImgs[iView][iBand].img[idx]  = pix.inv_coef[iBand][iView].tGas;
                 s3SpherAImgs[iView][iBand].img[idx]  = pix.inv_coef[iBand][iView].spherAlb;
                 s3DifFracImgs[iView][iBand].img[idx] = pix.inv_coef[iBand][iView].difFrac;
+                //s3DifFracImgs[iView][iBand].img[idx] = pix.rho_surf[iBand][iView];
             }
         }
     }
@@ -386,75 +400,13 @@ void S3NcdfData::setAodDataDir(const InputParameter& inPar, const S3MetaData& s3
     aodOutName = aodDataDir + "/" + aodOutName;
 }
 
-/*void S3NcdfData::readImg(S3BasicImage<short>* s3Img, const std::string& ncdfName, const std::string& varName, const NcdfImageType& imgType){
-    cout << varName << endl;
-
-    // open file
-    NcFile ncF(ncdfName, NcFile::read);
-    s3Img->name = varName;    
-    
-    ImageProperties imgProp;
-    readImageProp(ncF, &imgProp);
-    
-    NcVar imgVar = ncF.getVar(varName);
-    if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
-    }
-    
-    // get add_offset, scale_factor and _FillValue attriubutes 
-    // from image Variable IF available
-    getVarAttSafely(s3Img, imgVar);
-    
-    if (imgType == Nadir0500) {
-        imgVar.getVar(s3Img->img);
-    }
-    else if (imgType == Obliq0500){
-        getImgShifted(s3Img, imgProp, imgVar);
-    }
-    else if (imgType == NadirTpg || imgType == ObliqTpg){
-        getImgScaled(s3Img, imgProp, imgVar);
-    }
-    
-}
-
-void S3NcdfData::readImg(S3BasicImage<double>* s3Img, const std::string& ncdfName, const std::string& varName, const NcdfImageType& imgType){
-    cout << varName << endl;
-
-    // open file
-    NcFile ncF(ncdfName, NcFile::read);
-    s3Img->name = varName;    
-    
-    ImageProperties imgProp;
-    readImageProp(ncF, &imgProp);
-    
-    NcVar imgVar = ncF.getVar(varName);
-    if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
-    }
-
-    // get add_offset, scale_factor and _FillValue attriubutes 
-    // from image Variable IF available
-    getVarAttSafely(s3Img, imgVar);
-    
-    if (imgType == Nadir0500) {
-        imgVar.getVar(s3Img->img);
-    }
-    else if (imgType == Obliq0500){
-        getImgShifted(s3Img, imgProp, imgVar);
-    }
-    else if (imgType == NadirTpg || imgType == ObliqTpg){
-        getImgScaled(s3Img, imgProp, imgVar);
-    }
-    
-}*/
-
 void S3NcdfData::readImgBinned(S3BasicImage<short>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType){
     
     cout << varName << endl;
     // open file
     NcFile ncF(ncdfName, NcFile::read);
-    s3Img->name = varName;    
+    s3Img->name = varName;
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
@@ -645,15 +597,16 @@ void S3NcdfData::readImgBinned(S3BasicImage<double>* s3Img, const std::string& n
 }
 
 void S3NcdfData::getFlagImg(S3BasicImage<ushort>* s3Img, const ImageProperties& imgProp, const NcVar& imgVar){
+    char isObliq = (imgProp == s3MetaData.slstrPInfo.obliqImg0500m) ? 1 : 0;
     // if no binning or shifting is required simply return the img
-    if (!s3Img->imgP.isBinned && !(imgProp == s3MetaData.slstrPInfo.obliqImg0500m)){
+    if (!s3Img->imgP.isBinned && !isObliq){
         imgVar.getVar(s3Img->img);
         return;
     }
     
     const ImageProperties& origNadirProp = s3MetaData.slstrPInfo.nadirImg0500m;
-    const int dx = origNadirProp.xOff - imgProp.xOff;
-    const int dy = origNadirProp.yOff - ( imgProp.yOff - 0 );
+    const int dx = origNadirProp.xOff - ( imgProp.xOff - ((isObliq)?( -1 ) : 0) );
+    const int dy = origNadirProp.yOff - ( imgProp.yOff - ((isObliq)?(  1 ) : 0) );
 
     S3BasicImage<ushort> tmp(imgProp);
     imgVar.getVar(tmp.img);
@@ -678,6 +631,22 @@ void S3NcdfData::getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties&
     // if no binning or shifting is required simply return the img
     if (!s3Img->imgP.isBinned && !isObliq){
         imgVar.getVar(s3Img->img);
+        int idx;
+        bool isValidPixel;
+        for (int j1 = 0; j1 < s3Img->imgP.height; j1++){
+            for (int i1 = 0; i1 < s3Img->imgP.width; i1++){
+                idx = j1*s3Img->imgP.width+i1;
+                isValidPixel = s3Img->isValidValue(s3Img->img[idx]);
+                isValidPixel = isValidPixel && (s3ValidImg.img[idx] & (4+1));
+                if (isValidPixel) {
+                    flags.img[idx] |= (s3ValidImg.img[idx] & (4+1));
+                }
+                else {
+                    flags.img[idx] &= ~(4+1);
+                    s3Img->img[idx] = s3Img->noData;
+                }
+            }
+        }
         return;
     }
     
@@ -685,8 +654,10 @@ void S3NcdfData::getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties&
     imgVar.getVar(tmp.img);
     
     const ImageProperties& origNadirProp = s3MetaData.slstrPInfo.nadirImg0500m;
-    const int dx = origNadirProp.xOff - imgProp.xOff;
-    const int dy = origNadirProp.yOff - ( imgProp.yOff - 0 );
+    //const int dx = origNadirProp.xOff - ( imgProp.xOff - ((isObliq)?( -1 ) : 0) );
+    //const int dy = origNadirProp.yOff - ( imgProp.yOff - ((isObliq)?(  1 ) : 0) );
+    const int dx = origNadirProp.xOff - ( imgProp.xOff - offCorr[0] );
+    const int dy = origNadirProp.yOff - ( imgProp.yOff - offCorr[1] );
 
     const int& winSize = s3Img->imgP.binSize;
     double sumLand, sumOcn;
@@ -696,6 +667,9 @@ void S3NcdfData::getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties&
     // i/j 3 : iterate in smaller oblique image
     for (int j1 = 0; j1 < s3Img->imgP.height; j1++){
         for (int i1 = 0; i1 < s3Img->imgP.width; i1++){
+if (i1 == 24 && j1 == 0){
+    printf("stop\n");
+}
             nL = nO = 0;
             sumLand = sumOcn = 0;
             for (int j2 = j1 * winSize; j2 < (j1 + 1) * winSize; j2++){
@@ -731,13 +705,14 @@ void S3NcdfData::getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties&
             }
             else {
                 s3Img->img[j1 * s3Img->imgP.width + i1] = s3Img->noData;
-                //flags.img[j1 * flags.imgP.width + i1] = 0;
+                flags.img[j1 * flags.imgP.width + i1] &= ~((4+1) << isObliq);
             }
         }
     }
 }
 
 void S3NcdfData::getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const NcVar& imgVar){
+    char isObliq = (imgProp == s3MetaData.slstrPInfo.obliqImg0500m) ? 1 : 0;
 
     S3BasicImage<double> tmp(imgProp);
     imgVar.getVar(tmp.img);
@@ -747,8 +722,8 @@ void S3NcdfData::getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImagePropert
     s3Img->noData = -999.;
 
     const ImageProperties& origNadirProp = s3MetaData.slstrPInfo.nadirImg0500m;
-    const int dx = origNadirProp.xOff - imgProp.xOff;
-    const int dy = origNadirProp.yOff - ( imgProp.yOff - 0 );
+    const int dx = origNadirProp.xOff - ( imgProp.xOff - ((isObliq)?( -1 ) : 0) );
+    const int dy = origNadirProp.yOff - ( imgProp.yOff - ((isObliq)?(  1 ) : 0) );
 
     const int& winSize = s3Img->imgP.binSize;
     double sum;
@@ -911,9 +886,14 @@ void S3NcdfData::getBinGeomImg(S3BasicImage<double>* s3Img, const ImagePropertie
     imgVar.getVar(tmp.img);
     tmp.copyVarAttFrom(*s3Img);
     
+    if (imgVar.getName() == S3MetaData::VAA_NAME[0]){
+        corrTpg(tmp);
+    }
+    
     const ImageProperties& origNadirProp = s3MetaData.slstrPInfo.nadirImg0500m;
     bool disCont = false;//(s3Img->name.find("azimuth") != std::string::npos);
     const int& winSize = s3Img->imgP.binSize;
+    const int offs = winSize / 2;
     double val, sum, y2, x2;
     int n;
     // i/j 1 : iterate in binned output img
@@ -922,13 +902,16 @@ void S3NcdfData::getBinGeomImg(S3BasicImage<double>* s3Img, const ImagePropertie
         for (int i1 = 0; i1 < s3Img->imgP.width; i1++){
             n = 0;
             sum = 0;
-            for (int j2 = j1 * winSize; j2 < (j1 + 1) * winSize; j2++){
+            //for (int j2 = j1 * winSize; j2 < (j1 + 1) * winSize; j2++){
+            for (int j2 = j1 * winSize + offs; j2 < (j1 + 1) * winSize; j2+=winSize){
                 y2 = (j2 - origNadirProp.yOff ) * (double)(origNadirProp.yRes) / tmp.imgP.yRes + tmp.imgP.yOff;
-                for (int i2 = i1 * winSize; i2 < (i1 + 1) * winSize; i2++){
+                //for (int i2 = i1 * winSize; i2 < (i1 + 1) * winSize; i2++){
+                for (int i2 = i1 * winSize + offs; i2 < (i1 + 1) * winSize; i2+=winSize){
                     // i2, j2 are the actual idx in the nadir 500 image including the respective offset
                     // x2, y2 are the intermediate interpolated indices at tpg resolution
                     x2 = (i2 - origNadirProp.xOff ) * (double)(origNadirProp.xRes) / tmp.imgP.xRes + tmp.imgP.xOff;
-                    val = interpol_2d_img(tmp.img, x2, y2, tmp.imgP.width, tmp.imgP.height, disCont);
+                    //val = interpol_2d_img(tmp.img, x2, y2, tmp.imgP.width, tmp.imgP.height, disCont);
+                    val = interpol_2d_angImg(tmp.img, x2, y2, tmp.imgP.width, tmp.imgP.height, true);
                     //cerr << x2 << "/" << y2 << ": " << val << endl;
                     if (s3Img->isValidValue(val)) {
                         sum += val;
@@ -1220,7 +1203,15 @@ void S3NcdfData::createLandMask(){
     s3LandImg = S3BasicImage<signed char>(s3MetaData.slstrPInfo.nadirImg0500m);
     s3LandImg.name = "landmask";
     s3LandImg.initImgArray();
-    const ushort srfcTypeTest = 0b0000000000011111;
+    
+    // srfcTypeTest mask applied on confid flags
+    // flags used:
+    //  1 - coastline
+    //  2 - ocean
+    //  4 - tidal
+    //  8 - land
+    // 16 - inland water
+    const ushort srfcTypeTest = 0b0000000000011010;
 
     for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
         //read full resolution flag images
@@ -1235,7 +1226,7 @@ void S3NcdfData::createLandMask(){
                 s3LandImg.img[i] |= 1 << iView;
             }
             else if (mask == 2 || mask == (8+16)){
-                // is clear water
+                // is ocean or inland water
                 s3LandImg.img[i] |= 4 << iView;
             }
         }
@@ -1247,15 +1238,18 @@ void S3NcdfData::createCloudMask(){
     s3CloudImg.name = "cloudmask";
     s3CloudImg.initImgArray();
     const ushort cloudTest = 0b0011011111111110;
+    const ushort confidCloudTest = 0b0110000000000000;
 
     for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
         //read full resolution flag images
         std::string ncdfName = s3MetaData.s3FileName + "/" + s3MetaData.FLAGS_NAME[iView] + ".nc";
         S3BasicImage<ushort> s3CldImg = S3BasicImage<ushort>(s3MetaData.slstrPInfo.nadirImg0500m);
         s3CldImg.noData = 0;
-        readImgBinned(&s3CldImg, ncdfName, s3MetaData.BASIC_CLOUD_NAME[iView], Nadir0500);
+        //readImgBinned(&s3CldImg, ncdfName, s3MetaData.BASIC_CLOUD_NAME[iView], Nadir0500);
+        readImgBinned(&s3CldImg, ncdfName, s3MetaData.CONFID_NAME[iView], Nadir0500);
         for (int i = 0; i < s3CloudImg.imgP.nPix; i++){
-            ushort mask = (s3CldImg.img[i] & (cloudTest));
+            //ushort mask = (s3CldImg.img[i] & (cloudTest));
+            ushort mask = (s3CldImg.img[i] & (confidCloudTest));
             if (mask){
                 // is cloud
                 s3CloudImg.img[i] |= 1 << iView;
@@ -1294,3 +1288,22 @@ void S3NcdfData::createValidMask(){
 
 }
 
+void S3NcdfData::corrTpg(S3BasicImage<double>& tpg){
+    int w = tpg.imgP.width;
+    int h = tpg.imgP.height;
+    double* lp;
+    double y;
+    int i1,i2;
+    for (int iy=0; iy<h; iy++){
+        lp = &tpg.img[iy*w];
+        i1=0;   while (i1<(w-1) && ((lp[i1]>lp[i1+1]) || isnan(lp[i1]))) i1++;
+        i2=w-1; while (i2>0 && ((lp[i2]<lp[i2-1]) || isnan(lp[i2]))) i2--;
+        if (i1<(w-1) || i2>0){
+            for (int i=i1+1; i<i2; i++){
+                y = intAng(lp[i1], lp[i2], (double)(i-i1)/(double)(i2-i1));
+                if (y<0) y+=360;
+                if (abs(y-lp[i])>1) lp[i] = y;
+            }
+        }
+    }
+}

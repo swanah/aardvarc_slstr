@@ -15,6 +15,7 @@
 #define ATMOSPHERICLUT_HPP
 
 #include <map>
+#include <netcdf>
 #include "defs.hpp"
 
 #define CCI_INT 25
@@ -52,11 +53,10 @@ public:
     AtmosphericLut(const std::string& lutName);
     ~AtmosphericLut();
     
-    char getTetrahedronPoints(LutPars *lutpars, int verbose);
+    char getTetrahedronPoints(LutPars *lutpars, bool verbose);
     double getTetraVol(int v0, int v1, int v2, int vOrigin, LutPars* lutpars);
     void psInv6s(SlstrPixel* pix, float tau);
     float getInterPar(const float val, const LutDimParamDouble& dimPar);
-    double interpolRpath(const float szai, const float vzai, const float razi, const float presi, const float taui, const int iBand, const int iModel);
     
     
 private:
@@ -75,6 +75,7 @@ private:
     double interpolDifFrac(const float szai, const float presi, const float taui, const int iBand, const int iModel);
     double interpolTgas(const float szai, const float vzai, const float presi, const int iBand, const int iModel);
     double interpolTscat(const float szai, const float presi, const float taui, const int iBand, const int iModel);
+    double interpolRpath(const float szai, const float vzai, const float razi, const float presi, const float taui, const int iBand, const int iModel);
 };
 
 #endif /* ATMOSPHERICLUT_HPP */

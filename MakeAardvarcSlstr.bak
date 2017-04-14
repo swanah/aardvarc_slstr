@@ -1,0 +1,24 @@
+SHELL = /bin/sh
+
+
+LDFLAGS= -lm -lnetcdf_c++4 -lnetcdf
+INCDIR = -I/cygdrive/P/C++/NR
+CC      = g++
+
+SRC = $(wildcard *.cpp) $(wildcard tinyxml/*.cpp)
+OBJ = $(SRC:.cpp=.o)
+#OBJ = AeroClimatology.o AodRetrieval.o AtmosphericLut.o InputParameter.o main.o miscUtils.o OceanReflLut.o S3BasicImage.o S3MetaData.o S3NcdfData.o S3NcdfImg.o
+#HFILES = AeroClimatology.hpp AodRetrieval.hpp AtmosphericLut.hpp defs.hpp Images.hpp InputParameter.hpp Interpolation.hpp miscUtils.hpp OceanReflLut.hpp S3BasicImage.hpp S3MetaData.hpp S3NcdfData.hpp S3NcdfImg.hpp
+
+
+
+all: aardvarc
+
+aardvarc: $(OBJ)
+	$(CC) -O3 -o $@ $^ $(LDFLAGS)
+
+%.o: %.cpp
+	$(CC) -O3 -o $@ -c $< $(INCDIR)
+
+clean:
+	rm $(OBJ) aardvarc

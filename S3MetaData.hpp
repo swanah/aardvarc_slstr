@@ -34,9 +34,9 @@
         } slstrPInfo;
         
         static const std::string XFDU_MANIFEST_NAME;
-        static const std::string CHANNEL_RAD_NAME[][N_SLSTR_BANDS];
-        static const std::string CHANNEL_QUAL_NAME[][N_SLSTR_BANDS];
-        static const std::string CHANNEL_IRRAD_NAME[][N_SLSTR_BANDS];
+        static const std::string CHANNEL_RAD_NAME[][5];
+        static const std::string CHANNEL_QUAL_NAME[][5];
+        static const std::string CHANNEL_IRRAD_NAME[][5];
         static const std::string GEODETIC_NAME[];
         static const std::string LAT_NAME[];
         static const std::string LON_NAME[];

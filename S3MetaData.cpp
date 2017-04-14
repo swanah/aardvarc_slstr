@@ -176,8 +176,11 @@ void S3MetaData::readGenProdInfo(TiXmlElement* genPInfo){
             prodUnitType = node->FirstChildElement("sentinel3:type")->FirstChild()->ToText()->ValueStr();
             prodUnitDuration = node->FirstChildElement("sentinel3:duration")
                                    ->FirstChild()->ToText()->ValueStr();
-            prodUnitAlongTrackCoord = node->FirstChildElement("sentinel3:alongtrackCoordinate")
+            if (node->FirstChildElement("sentinel3:alongtrackCoordinate")){
+                prodUnitAlongTrackCoord = node->FirstChildElement("sentinel3:alongtrackCoordinate")
                                           ->FirstChild()->ToText()->ValueStr();
+            }
+            else prodUnitAlongTrackCoord = std::string("0000");
         }
         else if ( strcmp( node->Value(), "sentinel-safe:instrument" ) == 0 ){
             instrument = node->FirstChildElement("sentinel-safe:familyName")->Attribute("abbreviation");

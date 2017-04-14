@@ -33,6 +33,8 @@ public:
     bool hasNoData;
     T noData;
     std::string name;
+    bool isSpecBand;
+    float wvl;
 
     S3BasicImage();
     S3BasicImage(const int& newWidth, const int& newHeight, 
@@ -72,6 +74,7 @@ S3BasicImage<T>::S3BasicImage(const int& newWidth, const int& newHeight,
     hasScale = false;
     hasOffset = false;
     hasNoData = false;
+    isSpecBand = false;
     validMin = std::numeric_limits<T>::min();
     validMax = std::numeric_limits<T>::max();
     img = new T[imgP.width * imgP.height];
@@ -83,6 +86,7 @@ S3BasicImage<T>::S3BasicImage(const ImageProperties& newImgProp){
     hasScale = false;
     hasOffset = false;
     hasNoData = false;
+    isSpecBand = false;
     validMin = std::numeric_limits<T>::min();
     validMax = std::numeric_limits<T>::max();
     img = new T[imgP.width * imgP.height];
@@ -97,6 +101,8 @@ S3BasicImage<T>::S3BasicImage(const S3BasicImage& orig) {
     valOffset = orig.valOffset;
     hasNoData = orig.hasNoData;
     noData = orig.noData;
+    isSpecBand = orig.isSpecBand;
+    wvl = orig.wvl;
     validMin = orig.validMin;
     validMax = orig.validMax;
     int n = imgP.width*imgP.height;
@@ -118,6 +124,8 @@ S3BasicImage<T>& S3BasicImage<T>::operator=(const S3BasicImage& rhs) {
     std::swap(valOffset, lhs.valOffset);
     std::swap(hasNoData, lhs.hasNoData);
     std::swap(noData, lhs.noData);
+    std::swap(isSpecBand, lhs.isSpecBand);
+    std::swap(wvl, lhs.wvl);
     std::swap(validMin, lhs.validMin);
     std::swap(validMax, lhs.validMax);
     std::swap(img, lhs.img);
@@ -185,6 +193,8 @@ inline void S3BasicImage<T>::copyVarAttFrom(const S3BasicImage& srcImg){
     valScale = srcImg.valScale;
     validMin = srcImg.validMin;
     validMax = srcImg.validMax;
+    isSpecBand = srcImg.isSpecBand;
+    wvl = srcImg.wvl;
 }
 
 template<class T>

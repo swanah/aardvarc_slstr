@@ -28,3 +28,17 @@ double timer() {
     return (walltime);
 }
 
+void setBit(unsigned short *flag, unsigned short bitvalue, char test) {
+    if (test) *flag |= bitvalue;
+    else *flag &= ~bitvalue;
+}
+
+double intAng(double a, double b, double w){
+    double d2r = acos(-1.)/180.;
+    a *= d2r;
+    b *= d2r;
+    double cs = (1-w)*cos(a) + w*cos(b);
+    double sn = (1-w)*sin(a) + w*sin(b);
+    return atan2(sn,cs)/d2r;
+}
+

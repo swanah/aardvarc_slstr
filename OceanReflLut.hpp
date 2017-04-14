@@ -26,9 +26,9 @@ public:
     LutDimParamFloat szaD;
     LutDimParamFloat vzaD;
     LutDimParamFloat razD;
-    LutDimParamFloat aodD;
     LutDimParamFloat wvlD;
-    LutDimParamByte  modelD;
+    LutDimParamFloat aodD;
+    LutDimParamInt  modelD;
     LutDimParamFloat pigcD;
     LutDimParamFloat wdirD;
     LutDimParamFloat wdspD;
@@ -37,14 +37,18 @@ public:
     ~OceanReflLut();
     
     float getInterPar(const float val, const LutDimParamFloat& dimPar);
-    float getInterPar(const float val, const LutDimParamByte&  dimPar);
+    float getInterPar(const float val, const LutDimParamInt&  dimPar);
+    void get_rho_ocean(SlstrPixel* p, float tau);
+    void get_rho_ocean_wind(SlstrPixel* p, float tau, float wndspd);
+    void get_rho_ocean_sqr_error(float* m_error, SlstrPixel* p, float tau, float d_wind_speed, float d_pigment);
+    double interpol_ocean(float szai, float vzai, float razi, int iBand, float taui, float iModel, float pigi, float wdi, float wsi);
     
 private:
     OceanReflLut();
     OceanReflLut(const OceanReflLut& orig); //disabled copy constructor
     OceanReflLut& operator=(const OceanReflLut& rhs) { throw std::logic_error("assigning AeroClimatology not implemented"); } // disabled assignment 
     
-    readDimVarByte(netCDF::NcFile *ncF, std::string varName, LutDimParamByte& dimPar);
+    readDimVarInt(netCDF::NcFile *ncF, std::string varName, LutDimParamInt& dimPar);
     readDimVarFloat(netCDF::NcFile *ncF, std::string varName, LutDimParamFloat& dimPar);
     readLutVar(netCDF::NcFile *ncF, std::string varName);
 };

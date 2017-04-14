@@ -12,12 +12,14 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <functional>
+#include <cmath>
 
 
 
 void replaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace);
 double timer();
+void setBit(unsigned short *flag, unsigned short bitvalue, char test);
+double intAng(double a, double b, double w);
 
 
 template<typename T>

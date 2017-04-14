@@ -14,7 +14,9 @@
 #ifndef DEFS_HPP
 #define DEFS_HPP
 
-#define N_SLSTR_BANDS 5
+#include <cstdio>
+
+#define N_SLSTR_BANDS 4
 #define N_SLSTR_VIEWS 2
 #define N_DETECTORS 4
 
@@ -27,6 +29,25 @@
 #define   GLINT_THRS   0.008 // 1.6um threshold on modelled ocean refl. due to wind
 
 #define   SALTCONC  34.3  // Salt concentration (Default = 34.3 ppt)
+
+// AOD retrieval pixel flags (unsigned short = 16 bit)
+#define CLR_LAND 1                 // Bit 1
+#define CLR_OCEAN_N 2              // Bit 2
+#define CLR_OCEAN_F 4              // Bit 3
+//#define UNIFORM_0870_FAILED 4      // Bit 3
+#define CCI_MIX_FAILED 8           // Bit 4
+#define TOA_ARR_ZERO 16            // Bit 5
+#define RR_NEGATIVE 32             // Bit 6
+#define AOD_ZERO 64                // Bit 7
+#define EMOD_PENALTY 128           // Bit 8
+#define CURV_NEGATIVE 256          // Bit 9
+#define FINE_FRAC_FORCED 512       // Bit 10
+#define FIT_AOD_ZERO_CLIM 1024     // Bit 11
+#define FIT_AOD_ZERO_FINE 2048     // Bit 12
+#define FIT_AOD_ZERO_COARSE 4096   // Bit 13
+#define GLINT_NADIR         8192   // Bit 14
+#define GLINT_FWARD        16384   // Bit 15
+
 
 
 struct ImageProperties {
@@ -97,6 +118,7 @@ struct LutDimParamDouble {
 struct LutPars {
     float szani, szafi, vzani, vzafi, razni, razfi;
     float pAlti, o3i, ocn_mi, ocn_wsi, ocn_wdi, ocn_pi;
+    float ocn_razni, ocn_razfi;
     float mixing[4];  // Dust, SeaSalt, StrongAbs, WeakAbs
     int tetraP[4][4]; // 
     float mix_frac[3]; // fine_of_total, weak_of_fine, dust_of_coarse
@@ -143,10 +165,6 @@ struct SlstrPixel{
     char mixOK, range;
     char dims;
     unsigned short qflag;
-    //lookup_ocn *lut_ocn;
-    //lookup_4d *lut_4d;
-    //lookup_6d *lut_6d;
-    //lookup_4d * lut_7d[N_CCI_LUT];
     LutPars lutpars;
     LutCoefs inv_coef[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // inversion coefficients [band][angle]
     float DD[N_SLSTR_BANDS][N_SLSTR_VIEWS];       // diffuse fraction per band and angle
@@ -161,7 +179,7 @@ struct SlstrPixel{
     float ndvi_veg_weight;                        // 
     float dust_weight;                            // 
     float rho_glint[N_SLSTR_VIEWS];               // modelled rho ocean for glint testing (R(1.61) at wind speed of 9m/s)
-    float(*fct_emod_tau)(float);                  // fct. pointer to actual aerosol fit routine
+    //float(*fct_emod_tau)(float);                  // fct. pointer to actual aerosol fit routine
     bool dumpPix, dumpRR;                         // switch to dump Pix or just RR to output for debugging
     int x, y;                                     // x/y coord of pixel in image
     float ax, cx;                                 // brent brackets

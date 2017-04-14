@@ -17,7 +17,9 @@
 
 using namespace netCDF;
 
+//
 //public
+//
 
 AtmosphericLut::AtmosphericLut(const std::string& lutName) {
     NcFile ncF(lutName, NcFile::read);
@@ -54,7 +56,7 @@ AtmosphericLut::~AtmosphericLut() {
     ssa = NULL;
 }
 
-char AtmosphericLut::getTetrahedronPoints(LutPars* lutpars, int verbose){
+char AtmosphericLut::getTetrahedronPoints(LutPars* lutpars, bool verbose){
     double val_interp = 0.0;
     float fPercent[4];
     int vA = 0, vB = 1, vC = 2, vD = 3, vP = -1;
@@ -220,7 +222,7 @@ char AtmosphericLut::getTetrahedronPoints(LutPars* lutpars, int verbose){
          tetraP[0][iT]=tetraBest[3][iT];
          }
          ***/
-        if (verbose == 1) {
+        if (verbose) {
             fprintf(stdout, "Tetra Point 1: %i %i %i %i \n", lutpars->tetraP[0][0], lutpars->tetraP[0][1], lutpars->tetraP[0][2], lutpars->tetraP[0][3]);
             fprintf(stdout, "Tetra Point 2: %i %i %i %i \n", lutpars->tetraP[1][0], lutpars->tetraP[1][1], lutpars->tetraP[1][2], lutpars->tetraP[1][3]);
             fprintf(stdout, "Tetra Point 3: %i %i %i %i \n", lutpars->tetraP[2][0], lutpars->tetraP[2][1], lutpars->tetraP[2][2], lutpars->tetraP[2][3]);
