@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
         s3Data.readNcdf(outImgProp);
 
         t2 = timer();
-        printf("Runtime %f seconds\n", t2 - t1);
+        printf("Runtime %f seconds\n", (t2 - t1));
 
         s3Data.convRad2Refl();
         s3Data.verifyInput();

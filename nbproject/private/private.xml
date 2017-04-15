@@ -9,11 +9,8 @@
         <group>
             <file>file:/P:/C++/aardvarc/aardvarc_slstr/S3NcdfData.hpp</file>
             <file>file:/P:/C++/aardvarc/aardvarc_slstr/InputParameter.cpp</file>
-            <file>file:/P:/C++/aardvarc/aardvarc_slstr/AtmosphericLut.cpp</file>
-            <file>file:/P:/C++/aardvarc/aardvarc_slstr/AodRetrieval.hpp</file>
             <file>file:/P:/C++/aardvarc/aardvarc_slstr/defs.hpp</file>
             <file>file:/P:/C++/aardvarc/aardvarc_slstr/main.cpp</file>
-            <file>file:/P:/C++/aardvarc/aardvarc_slstr/AodRetrieval.cpp</file>
             <file>file:/P:/C++/aardvarc/aardvarc_slstr/S3NcdfData.cpp</file>
         </group>
     </open-files>

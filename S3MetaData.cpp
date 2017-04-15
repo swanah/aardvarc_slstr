@@ -34,6 +34,8 @@
     const std::string S3MetaData::FLAGS_NAME[] = {"flags_an", "flags_ao"};
     const std::string S3MetaData::CONFID_NAME[] = {"confidence_an", "confidence_ao"};
     const std::string S3MetaData::BASIC_CLOUD_NAME[] = {"cloud_an", "cloud_ao"};
+    const std::string S3MetaData::S3SU_CLOUD_FNAME = "sCloudS3SU";
+    const std::string S3MetaData::S3SU_CLOUD_VNAME[] = {"cld_n", "cld_o"};
     const std::string S3MetaData::TIME_NAME[] = {"time_an", "time_ao"};
     
     

@@ -51,6 +51,8 @@
         static const std::string FLAGS_NAME[];
         static const std::string CONFID_NAME[];
         static const std::string BASIC_CLOUD_NAME[];
+        static const std::string S3SU_CLOUD_FNAME;
+        static const std::string S3SU_CLOUD_VNAME[];
         static const std::string TIME_NAME[];
         
     private:

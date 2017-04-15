@@ -80,6 +80,8 @@ public:
     
 private:
     int offCorr[2];
+    bool isLandMaskAvailable;
+    bool isFlagsImgAvailable;
     enum NcdfImageType {Nadir0500, Obliq0500, NadirTpg, ObliqTpg}; 
     
     S3NcdfData();
@@ -87,29 +89,17 @@ private:
     S3NcdfData& operator=(const S3NcdfData& rhs){ throw std::logic_error("S3NcdfData shoudlnt be copied"); } // disable copy assignment 
 
     void setAodDataDir(const InputParameter& inPar, const S3MetaData& s3MetaData);
-    /*void readImg(S3BasicImage<short>* s3Img, const std::string& ncdfName, 
-                 const std::string& varName, const NcdfImageType& imgType);
-    void readImg(S3BasicImage<double>* s3Img, const std::string& ncdfName, 
-                 const std::string& varName, const NcdfImageType& imgType);*/
     void readImgBinned(S3BasicImage<short>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
     void readImgBinned(S3BasicImage<ushort>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
+    void readSCloudS3SU(S3BasicImage<int>* s3Img, const std::string& ncdfName, const std::string varName);
     void readImgBinned(S3BasicImage<double>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
     void getFlagImg(S3BasicImage<ushort>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    /*void getBinImgShifted(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    void getBinImgShifted(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    void getBinImgScaled(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);*/
     void getBinGeomImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-
-    /*void getImgScaled(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    void getImgScaled(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    void getImgShifted(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
-    void getImgShifted(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);*/
-
     void split(const std::string& s, char c, std::vector<std::string>& v);
     void readImageProp(S3MetaData* s3md, ImageProperties* imgProp);
     void readImageProp(const netCDF::NcFile& ncF, ImageProperties* imgProp);
@@ -119,6 +109,7 @@ private:
     void readIrrad(double irrad[][N_SLSTR_BANDS]);
     void createLandMask();
     void createCloudMask();
+    void createMyCloudMask();
     void createValidMask();
     void corrTpg(S3BasicImage<double>& tpg);
 };
