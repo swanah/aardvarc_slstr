@@ -56,6 +56,7 @@
         static const std::string TIME_NAME[];
         
     private:
+
         S3MetaData(const S3MetaData& orig){}     // copy constructor
         S3MetaData& operator=(const S3MetaData& rightVal){}  //copy assignement
 

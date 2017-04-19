@@ -24,7 +24,7 @@ public:
     float dlat, dlon;
     int nx, ny;
 
-    AeroClimatology(const std::string climName, const int month);
+    AeroClimatology(const std::string& climName, const int& month);
     ~AeroClimatology();
     
     void getMixPercentages(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod);

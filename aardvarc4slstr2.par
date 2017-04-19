@@ -1,0 +1,18 @@
+***********************************************************
+* AARDVARC 4 SLSTR PARAMETER FILE
+***********************************************************
+
+AOD_OUT_PATH = e:/sat/S3A_SLSTR_AOD/L2/%YYYY/%MM_2
+* CLOUD_FLAGS = L1B_BASIC
+CLOUD_FLAGS = SCLOUDS3SU
+SCLOUDS3SU_PATH = e:/sat/S3A_SLSTR_CLD/L2/%YYYY/%MM_2
+ATMOS_LUT = e:/model/mkS3Lut/s3Lut.nc
+OCEAN_LUT = e:/model/oceanLut/ocnLut.nc
+AER_CLIMA = e:/projects/S3MPC/submitted/adf/aerosolClimatology.nc
+WINSIZE = 9
+SZA_LIMIT = 75
+BIN_VALID_THRS = 0.5
+DO_GEOSUBSET = FALSE
+LAT_MIN_MAX = 30.0 50.0
+LON_MIN_MAX = -10.0 20.0
+

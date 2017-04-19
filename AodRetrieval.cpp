@@ -12,7 +12,7 @@
  */
 
 #include <cmath>
-//#include "defs.hpp"
+#include <stdexcept>
 #include "miscUtils.hpp"
 #include "AodRetrieval.hpp"
 
@@ -52,8 +52,6 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
     if (isOcean) {
         emod_size.emodTau = &emod_tau_ocean;
     }
-    
-    //pix.fmin = emod_size(pix.lutpars.mix_frac[0]);
 /***/
     // start size fitting
     Brent brent;
@@ -75,7 +73,7 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
 /***/
     // determine curvature to estimate uncertainty
     // rescaling uncertainty by about a factor of 0.25
-    cc = 0.5; //cc = getCurvature(fct_emod_tau, isOcean);
+    cc = getCurvature(emod_size.emodTau, isOcean);
     if ( cc > 0 ){
         pix.ediff = 1.0 / sqrt(2.0 * cc);
         
@@ -97,12 +95,12 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
 // private
 //
 
-    float AodRetrieval::getCurvature(float(*fct_emod_tau)(float), char isOcean){
+    float AodRetrieval::getCurvature(EmodTau *emodTau, char isOcean){
         //float x[] = {-0.03+pixel->aod, pixel->aod, 0.03+pixel->aod};
         //float x[] = {0.75*pixel->aod, pixel->aod, 0.75*pixel->aod+0.5};
-        float x[] = {0.7*pix.aod, pix.aod, 0.85*pix.aod};
-        float x2[3], y[3];
-        float r,cc;
+        double x[] = {0.7*pix.aod, pix.aod, 0.85*pix.aod};
+        double x2[3], y[3];
+        double r,cc;
         char i;
 
         //TODO: fixed constants need adjustment if LUT changes
@@ -120,14 +118,14 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
         for (i=0; i<3; i++){
             x2[i] = x[i] * x[i];
         }
-        y[0] = (*fct_emod_tau)(x[0]);
-        y[2] = (*fct_emod_tau)(x[2]);
+        y[0] = (*emodTau)(x[0]);
+        y[2] = (*emodTau)(x[2]);
         if (pix.RR[0][0]<0){
             x[2] = 0.5*pix.aod;
             x2[2] = x[2] * x[2];
-            y[2] = (*fct_emod_tau)(x[2]);
+            y[2] = (*emodTau)(x[2]);
         }
-        y[1] = (*fct_emod_tau)(x[1]); //needs to be done last to get correct RR for pixel
+        y[1] = (*emodTau)(x[1]); //needs to be done last to get correct RR for pixel
         r = (x[2] - x[0]) / (x[1] - x[0]);
         cc = y[2] - y[0] - r * (y[1] - y[0]);
         cc /= (x2[2] - x2[0] - r* (x2[1] - x2[0]));

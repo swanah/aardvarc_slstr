@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <netcdf>
+#include <stdexcept>
 #include "OceanReflLut.hpp"
 
 using namespace netCDF;
@@ -144,7 +145,7 @@ void OceanReflLut::get_rho_ocean_sqr_error(float* m_error, SlstrPixel* p, float 
 // private
 //
 
-OceanReflLut::readDimVarInt(NcFile *ncF, std::string varName, LutDimParamInt& dimPar){
+void OceanReflLut::readDimVarInt(NcFile *ncF, std::string varName, LutDimParamInt& dimPar){
     NcVar v;
     v = ncF->getVar(varName);
     dimPar.n = v.getDim(0).getSize();
@@ -155,7 +156,7 @@ OceanReflLut::readDimVarInt(NcFile *ncF, std::string varName, LutDimParamInt& di
     dimPar.delta = a[1] - a[0]; 
 }
 
-OceanReflLut::readDimVarFloat(NcFile *ncF, std::string varName, LutDimParamFloat& dimPar){
+void OceanReflLut::readDimVarFloat(NcFile *ncF, std::string varName, LutDimParamFloat& dimPar){
     NcVar v;
     v = ncF->getVar(varName);
     dimPar.n = v.getDim(0).getSize();
@@ -166,7 +167,7 @@ OceanReflLut::readDimVarFloat(NcFile *ncF, std::string varName, LutDimParamFloat
     dimPar.delta = a[1] - a[0]; 
 }
 
-OceanReflLut::readLutVar(NcFile *ncF, std::string varName){
+void OceanReflLut::readLutVar(NcFile *ncF, std::string varName){
     NcVar v;
     v = ncF->getVar(varName);
     nRsurf = 1;

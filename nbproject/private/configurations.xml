@@ -27,8 +27,9 @@
       <runprofile version="9">
         <runcommandpicklist>
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" p:/C++/aardvarc/aardvarc_slstr/aardvarc4slstr.par e:/sat/S3A_SLSTR/20161230/S3A_SL_1_RBT____20161230T105314_20161230T105614_20161230T131740_0180_012_322_2339_SVL_O_NR_002.SEN3</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <runcommand>"${OUTPUT_PATH}" p:/C++/aardvarc/aardvarc_slstr/aardvarc4slstr.par e:/sat/S3A_SLSTR/20161230/S3A_SL_1_RBT____20161230T105314_20161230T105614_20161230T131740_0180_012_322_2339_SVL_O_NR_002.SEN3</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

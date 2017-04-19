@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <netcdf>
+#include <stdexcept>
 #include "AtmosphericLut.hpp"
 
 using namespace netCDF;

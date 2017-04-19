@@ -75,7 +75,6 @@
         <linkerTool>
           <linkerLibItems>
             <linkerOptionItem>`pkg-config --libs netcdf-cxx4`</linkerOptionItem>
-            <linkerOptionItem>`pkg-config --libs boost_filesystem`</linkerOptionItem>
             <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
           </linkerLibItems>
         </linkerTool>

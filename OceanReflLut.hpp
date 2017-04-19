@@ -15,6 +15,7 @@
 #define OCEANREFLLUT_HPP
 
 #include <netcdf>
+#include <stdexcept>
 #include "defs.hpp"
 
 
@@ -48,9 +49,9 @@ private:
     OceanReflLut(const OceanReflLut& orig); //disabled copy constructor
     OceanReflLut& operator=(const OceanReflLut& rhs) { throw std::logic_error("assigning AeroClimatology not implemented"); } // disabled assignment 
     
-    readDimVarInt(netCDF::NcFile *ncF, std::string varName, LutDimParamInt& dimPar);
-    readDimVarFloat(netCDF::NcFile *ncF, std::string varName, LutDimParamFloat& dimPar);
-    readLutVar(netCDF::NcFile *ncF, std::string varName);
+    void readDimVarInt(netCDF::NcFile *ncF, std::string varName, LutDimParamInt& dimPar);
+    void readDimVarFloat(netCDF::NcFile *ncF, std::string varName, LutDimParamFloat& dimPar);
+    void readLutVar(netCDF::NcFile *ncF, std::string varName);
 };
 
 #endif /* OCEANREFLLUT_HPP */

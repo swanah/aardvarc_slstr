@@ -14,6 +14,7 @@
 #ifndef AODRETRIEVAL_HPP
 #define AODRETRIEVAL_HPP
 
+#include <stdexcept>
 #include "defs.hpp"
 #include "AtmosphericLut.hpp"
 #include "OceanReflLut.hpp"
@@ -78,10 +79,10 @@ public:
         pix.aod = brent.xmin;
         penalty = (fot - pix.lutpars.mix_frac[0]);
         fmin += 25 * pow(penalty, 4);
-        if (pix.prevFineFrac > 0) {
+        /*if (pix.prevFineFrac > 0) {
             penalty = (fot - pix.prevFineFrac);
             fmin += 100 * pow(penalty, 4);
-        }
+        }*/
         
         return fmin;
     }
@@ -268,6 +269,7 @@ public:
                 }
             }
         }
+        if (!pix.view_clear[0] || !pix.view_clear[1]) fmin *= 2;
         return fmin;
     }    
 };
@@ -393,7 +395,7 @@ private:
     AodRetrieval(const AodRetrieval& orig) : pix(orig.pix), atmLut(orig.atmLut), ocnLut(orig.ocnLut) {}; // disable copy construtor
     AodRetrieval& operator=(const AodRetrieval& rhs) { throw std::logic_error("AodRetrieval shoudlnt be copied"); } // disable copy assignment
 
-    float getCurvature(float(*fct_emod_tau)(float), char isOcean);
+    float getCurvature(EmodTau *emodTau, char isOcean);
 /*
     float emod_size(float fot);
     float emod_tau_ocean_model(float tau);

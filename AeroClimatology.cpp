@@ -12,12 +12,13 @@
  */
 
 #include <netcdf>
+#include <stdexcept>
 #include "AeroClimatology.hpp"
 #include "defs.hpp"
 
 using namespace netCDF;
 
-AeroClimatology::AeroClimatology(const std::string climName, const int month) {
+AeroClimatology::AeroClimatology(const std::string& climName, const int& month) {
 
     // for now assuming global 1x1° climatology
     nx = 360;

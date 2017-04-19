@@ -16,6 +16,10 @@
 
 #include <cstdio>
 
+#ifndef M_PI
+#define M_PI		3.14159265358979323846
+#endif
+
 #define N_SLSTR_BANDS 4
 #define N_SLSTR_VIEWS 2
 #define N_DETECTORS 4
@@ -37,7 +41,8 @@
 //#define UNIFORM_0870_FAILED 4      // Bit 3
 #define CCI_MIX_FAILED 8           // Bit 4
 #define TOA_ARR_ZERO 16            // Bit 5
-#define RR_NEGATIVE 32             // Bit 6
+//#define RR_NEGATIVE 32             // Bit 6
+#define AOD_HIGH 32                // Bit 6
 #define AOD_ZERO 64                // Bit 7
 #define EMOD_PENALTY 128           // Bit 8
 #define CURV_NEGATIVE 256          // Bit 9

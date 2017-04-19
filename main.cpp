@@ -13,8 +13,8 @@
 
 #include <cstdlib>
 #include <netcdf>
-#include <sys/_intsup.h>
 #include <sys/unistd.h>
+#include <stdexcept>
 #include "InputParameter.hpp"
 #include "S3MetaData.hpp"
 #include "S3NcdfData.hpp"
@@ -42,17 +42,16 @@ void computeOutputImageProp(ImageProperties* outputImgProp, const ImagePropertie
  *
  */
 int main(int argc, char** argv) {
-    double t1, t2;
-
-    InputParameter pars;
-    S3NcdfData s3Data(pars);
-    ImageProperties outImgProp;
-    computeOutputImageProp(&outImgProp, s3Data.s3MetaData.slstrPInfo.nadirImg0500m, pars.winSize);
-
-    cout << s3Data.s3MetaData.productName << endl;
     try {
+        InputParameter pars(argc, argv);
+        S3NcdfData s3Data(pars);
+        ImageProperties outImgProp;
+        computeOutputImageProp(&outImgProp, pars.s3MD.slstrPInfo.nadirImg0500m, pars.winSize);
+
+        cout << pars.s3MD.productName << endl;
 
         /* reading nadir and oblique radiance images */
+        double t1, t2;
         t1 = timer();
 
         s3Data.readNcdf(outImgProp);
@@ -71,7 +70,7 @@ int main(int argc, char** argv) {
         t1 = timer();
 
         // read aerosol climatology
-        AeroClimatology aerClim(pars.climFileName, s3Data.s3MetaData.getMonth());
+        AeroClimatology aerClim(pars.climFileName, pars.s3MD.getMonth());
 
         // read ocean LUT
         OceanReflLut ocnLut(pars.ocnLutFileName);
@@ -83,7 +82,7 @@ int main(int argc, char** argv) {
         printf("Time to read Luts %f seconds\n", t2 - t1);
 
         SlstrPixel slstrPixel;
-        int idx;
+        int idx, nPix=0;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
 //        for (slstrPixel.x = 129; slstrPixel.x < 130; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
@@ -100,11 +99,12 @@ int main(int argc, char** argv) {
                     slstrPixel.ocn_wind_dir   = DEFAULT_WDIR;
                     slstrPixel.ocn_pigment    = DEFAULT_PIG;
 
+                    slstrPixel.qflag = s3Data.flags.img[idx];
                     slstrPixel.view_clear[0] = ((s3Data.flags.img[idx] & (4+1)) > 0);
                     slstrPixel.view_clear[1] = ((s3Data.flags.img[idx] & (8+2)) > 0);
 
                     s3Data.getToaReflec(idx, slstrPixel.tarr);
-                    if (slstrPixel.x == 0 && slstrPixel.y == 30){
+                    if (slstrPixel.x == -1 && slstrPixel.y == -1){
                         printf("Pixel (%d/%d) is valid and at %s\n", slstrPixel.x, slstrPixel.y, slstrPixel.geo_pos.toCstr());
                         printf("Pixel SZA: %f SAA: %f VZA: %f VAA: %f RAZ: %f\n", slstrPixel.geom.nad_sol_zen, slstrPixel.geom.nad_sol_azim, slstrPixel.geom.nad_sat_zen, slstrPixel.geom.nad_sat_azim, slstrPixel.geom.razn);
                         printf("Pixel SZA: %f SAA: %f VZA: %f VAA: %f RAZ: %f\n", slstrPixel.geom.for_sol_zen, slstrPixel.geom.for_sol_azim, slstrPixel.geom.for_sat_zen, slstrPixel.geom.for_sat_azim, slstrPixel.geom.razf);
@@ -148,6 +148,7 @@ int main(int argc, char** argv) {
                             retrieval.retrieveAodSizeBrent(true);
                         }
                         s3Data.setRetrievalResults(idx, slstrPixel);
+                        nPix++;
                     }
                     catch (std::range_error){
                         fprintf(stderr, "skipping pixel, is not inside LUT\n");
@@ -159,7 +160,7 @@ int main(int argc, char** argv) {
                     //printf("Pixel (%d/%d) is invalid\n", slstrPixel.x, slstrPixel.y);
                 }
 
-                s3Data.flags.img[idx] &= slstrPixel.qflag;
+                s3Data.flags.img[idx] |= slstrPixel.qflag;
 
             }
         }
@@ -168,46 +169,53 @@ int main(int argc, char** argv) {
         t1 = timer();
         printf("Time to retrieve AOD %f seconds\n", t1 - t2);
 /*******/
-        cout << "writing: " << s3Data.aodOutName << endl;
-        NcFile ncOut(s3Data.aodOutName, NcFile::replace);
-        NcDim xDim = ncOut.addDim("columns", imgWidth);
-        NcDim yDim = ncOut.addDim("rows", imgHeight);
-        std::vector<NcDim> dimVec;
-        dimVec.push_back(yDim);
-        dimVec.push_back(xDim);
+        if (nPix>0){
+            cout << "writing: " << pars.aodOutName << endl;
+            NcFile ncOut(pars.aodOutName, NcFile::replace);
+            NcDim xDim = ncOut.addDim("columns", imgWidth);
+            NcDim yDim = ncOut.addDim("rows", imgHeight);
+            std::vector<NcDim> dimVec;
+            dimVec.push_back(yDim);
+            dimVec.push_back(xDim);
 
-        for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
-            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
-                addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3SdrImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3RPathImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3TDownImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3TUpImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3TGasImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3SpherAImgs[iView][iBand]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3DifFracImgs[iView][iBand]);
+            for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
+                for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+                    addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3SdrImgs[iView][iBand]);
+                    /**
+                    addWriteVar(&ncOut, dimVec, s3Data.s3RPathImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3TDownImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3TUpImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3TGasImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3SpherAImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3DifFracImgs[iView][iBand]);
+                    /**/
+                }
+
+                addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3SzaImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3SaaImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
             }
+            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
+            }
+            for (int i = 0; i < 3; i++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3AerFracImgs[i]);
+            }
+            addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3UncImg);
+            addWriteVar(&ncOut, dimVec, s3Data.flags);
 
-            addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[iView]);
-            addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[iView]);
-            addWriteVar(&ncOut, dimVec, s3Data.s3SzaImgs[iView]);
-            addWriteVar(&ncOut, dimVec, s3Data.s3SaaImgs[iView]);
-            addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
-            addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
+            ncOut.close();
+            t2 = timer();
+            printf("Runtime %f seconds\n", t2 - t1);
         }
-        for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
-            addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
+        else {
+            printf("%s\nNo valid pixels to process\n", pars.s3MD.productName.c_str());
         }
-        for (int i = 0; i < 3; i++){
-            addWriteVar(&ncOut, dimVec, s3Data.s3AerFracImgs[i]);
-        }
-
-        addWriteVar(&ncOut, dimVec, s3Data.flags);
-
-        ncOut.close();
-        t2 = timer();
-        printf("Runtime %f seconds\n", t2 - t1);
-
 
         /* writing hi res flag data to ncdf file */
         /*imgWidth  = s3Data.s3MetaData.slstrPInfo.nadirImg0500m.width;
@@ -229,9 +237,20 @@ int main(int argc, char** argv) {
 
     }
     catch (exceptions::NcException& e){
-        cerr << "unrecoverable error, exiting...\n";
-        cerr << e.what();
+        cerr << e.what() << endl << "unrecoverable netcdf error" << endl;
         return e.errorCode();
+    }
+    /*catch (boost::filesystem::filesystem_error& e){
+        cerr << e.what() << endl << "boost FS error" << endl;
+        return 1;        
+    }*/
+    catch (std::runtime_error& e){
+        cerr << e.what() << endl << "runtime error" << endl;
+        return 1;
+    }
+    catch (...){
+        cerr << "unknown error" << endl;
+        return 1;
     }
     cout << "finished!" << endl;
     return 0;

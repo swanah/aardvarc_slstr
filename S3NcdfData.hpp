@@ -23,9 +23,13 @@
 
 class S3NcdfData {
 public:
-    std::string s3DataDir;
-    std::string aodDataDir, aodOutName;
-    S3MetaData s3MetaData;
+    const InputParameter &pars;
+    const std::string& s3DataDir;
+    /*const S3MetaData& s3MetaData;
+    const float &szaLim;
+    const bool &doGeoSubset;
+    const float *latLim;
+    const float *lonLim;*/
 
     S3BasicImage<signed char>   s3LandImg;  //L1b nadir resolution image of land mask
     S3BasicImage<signed char>   s3CloudImg; //L1b nadir resolution image of cloud mask
@@ -43,6 +47,8 @@ public:
     S3BasicImage<short>  s3SdrImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // SDR images [views][bands]
     S3BasicImage<float>  s3AodImgs[N_SLSTR_BANDS];                // AOD images [bands]
     S3BasicImage<float>  s3AerFracImgs[3];                        // fine_of_total, weak_of_fine, dust_of_coarse
+    S3BasicImage<float>  s3FminImg;                               // fmin
+    S3BasicImage<float>  s3UncImg;                                // uncer
     S3BasicImage<float>  s3RPathImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // rPath images [views][bands]
     S3BasicImage<float>  s3TDownImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // downw. transm images [views][bands]
     S3BasicImage<float>  s3TUpImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];   // upw. transm images [views][bands]
@@ -63,6 +69,8 @@ public:
 
     static const std::string AOD_NAMES[5];
     static const std::string AER_FRAC_NAMES[3];
+    static const std::string FMIN_NAME;
+    static const std::string UNC_NAME;
     
     S3NcdfData(const InputParameter& inPar);
     ~S3NcdfData();
@@ -76,7 +84,7 @@ public:
     void getGeoPos(const int& idx, GeoPos* gp);
     void getViewGeom(const int& idx, ViewGeom* vg);
     void getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]);
-    void setRetrievalResults(const int& idx, const SlstrPixel& pix);
+    void setRetrievalResults(const int& idx, SlstrPixel& pix);
     
 private:
     int offCorr[2];
@@ -88,15 +96,14 @@ private:
     S3NcdfData(const S3NcdfData& orig);           // disable copy construtor
     S3NcdfData& operator=(const S3NcdfData& rhs){ throw std::logic_error("S3NcdfData shoudlnt be copied"); } // disable copy assignment 
 
-    void setAodDataDir(const InputParameter& inPar, const S3MetaData& s3MetaData);
     void readImgBinned(S3BasicImage<short>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
-    void readImgBinned(S3BasicImage<ushort>* s3Img, const std::string& ncdfName, const std::string varName, 
+    void readImgBinned(S3BasicImage<unsigned short>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
     void readSCloudS3SU(S3BasicImage<int>* s3Img, const std::string& ncdfName, const std::string varName);
     void readImgBinned(S3BasicImage<double>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
-    void getFlagImg(S3BasicImage<ushort>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
+    void getFlagImg(S3BasicImage<unsigned short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeomImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);

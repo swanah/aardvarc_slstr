@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <typeinfo>
+#include <stdexcept>
 
 #include "tinyxml/tinyxml.h"
 #include "miscUtils.hpp"

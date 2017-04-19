@@ -16,6 +16,7 @@
 
 #include <map>
 #include <netcdf>
+#include <stdexcept>
 #include "defs.hpp"
 
 #define CCI_INT 25
