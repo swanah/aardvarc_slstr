@@ -1,15 +1,2 @@
 # aardvarcSlstr
-
-build using make:
-make -f MakeAardvarcSlstr aardvarc
-
-set paths to LUTs and parameters in a parameter file,
-see sample parameter slstrTest.par
-
-Cloud masking allows for two options:
-L1B_BASIC - use basic L1b mask
-SCLOUDS3SU - use Swansea SLSTR cloud mask (requires running external cloud detection code first, currently not yet available)
-
-run retrieval by specifying the parameter file and the L1b SLSTR SEN3 directory:
-aardvarc.exe slstrTest.par S3A_SL_1_RBT_....SEN3
-
+Swansea University AOD retrieval for SLSTR
