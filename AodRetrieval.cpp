@@ -30,14 +30,27 @@ AodRetrieval::~AodRetrieval() {}
 void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
     float ax = atmLut.aodD.min;
     float cx = atmLut.aodD.max;
-    float bx = 0.05;
+    float bx = pix.lutpars.mix_frac[0];//0.05;
     float fot, cc;
     pix.lutpars.climFineMode = pix.lutpars.mix_frac[0];
-    //float(*fct_emod_tau)(float) = (isOcean) ? emod_tau_ocean_model : emod_tau_uncer;
+
+    EmodTauUncert emod_tau_uncert(pix, atmLut, ocnLut);
+    EmodTauOcean  emod_tau_ocean(pix, atmLut, ocnLut);
+    EmodSize emod_size(pix, atmLut, ocnLut, &emod_tau_uncert);
+    if (isOcean) {
+        emod_size.emodTau = &emod_tau_ocean;
+    }
+    pix.ax = atmLut.aodD.min;  //ax - 0.5 * (ax - TAU_MIN);
+    pix.cx = atmLut.aodD.max;  //cx + 0.01 * (TAU_MAX - cx);
 
     // start retrrieval with fine mode fraction from climatology
     // to test amount of aod and determine ax cx limits
-    //pix.fmin = brent_d(&ax, bx, &cx, fct_emod_tau, TOL, &pix.aod);
+    Brent brentSize;
+    brentSize.ax = ax; brentSize.cx = cx; brentSize.bx = bx;
+    brentSize.minimize(*emod_size.emodTau);
+    pix.fmin = brentSize.fmin;
+    pix.aod = brentSize.xmin;
+
     if ((!isOcean) && (pix.aod > 0.01)){
         pix.ax = atmLut.aodD.min;  //ax - 0.5 * (ax - TAU_MIN);
         pix.cx = cx + 0.02 * (atmLut.aodD.max - cx);
@@ -46,21 +59,15 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
         pix.ax = atmLut.aodD.min;  //ax - 0.5 * (ax - TAU_MIN);
         pix.cx = atmLut.aodD.max;  //cx + 0.01 * (TAU_MAX - cx);
     }
-    EmodTauUncert emod_tau_uncert(pix, atmLut, ocnLut);
-    EmodTauOcean  emod_tau_ocean(pix, atmLut, ocnLut);
-    EmodSize emod_size(pix, atmLut, ocnLut, &emod_tau_uncert);
-    if (isOcean) {
-        emod_size.emodTau = &emod_tau_ocean;
-    }
+
 /***/
     // start size fitting
-    Brent brent;
-    brent.ax = 0; brent.cx = 1;
-    brent.bx = pix.lutpars.mix_frac[0];
+    brentSize.ax = 0; brentSize.cx = 1;
+    brentSize.bx = pix.lutpars.mix_frac[0];
     fot = pix.lutpars.mix_frac[0];
-    brent.minimize(emod_size);
-    pix.fmin = brent.fmin;
-    fot = brent.xmin;
+    brentSize.minimize(emod_size);
+    pix.fmin = brentSize.fmin;
+    fot = brentSize.xmin;
 
     // finally set pixel values to optimal values
     pix.lutpars.mix_frac[0] = fot;

@@ -94,7 +94,7 @@ InputParameter::InputParameter(int argc, char** argv) {
             if (sVec[0] == "BIN_VALID_THRS") binValidThrs = std::strtod(sVec[2].c_str(), NULL);
             if (sVec[0] == "DO_GEOSUBSET") doGeoSubset = (sVec[2] == "TRUE");
         }
-        else if (sVecLen > 3){
+        if (sVecLen > 3){
             if (sVec[0] == "LAT_MIN_MAX") {
                 latLim[0] = std::strtod(sVec[2].c_str(), NULL);
                 latLim[1] = std::strtod(sVec[3].c_str(), NULL);

@@ -64,6 +64,11 @@ void setBit(unsigned short *flag, unsigned short bitvalue, char test) {
     else *flag &= ~bitvalue;
 }
 
+void setBit(short *flag, short bitvalue, char test) {
+    if (test) *flag |= bitvalue;
+    else *flag &= ~bitvalue;
+}
+
 double intAng(double a, double b, double w){
     double d2r = acos(-1.)/180.;
     a *= d2r;

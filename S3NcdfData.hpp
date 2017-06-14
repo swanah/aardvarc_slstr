@@ -43,6 +43,7 @@ public:
     S3BasicImage<double> s3SaaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VzaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VaaImgs[N_SLSTR_VIEWS];
+    S3BasicImage<float> s3PresImg;
     S3BasicImage<short>  flags; // retrieval resolution flag image
     S3BasicImage<short>  s3SdrImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // SDR images [views][bands]
     S3BasicImage<float>  s3AodImgs[N_SLSTR_BANDS];                // AOD images [bands]
@@ -83,6 +84,7 @@ public:
     bool isValidPixel(const int& idx);
     void getGeoPos(const int& idx, GeoPos* gp);
     void getViewGeom(const int& idx, ViewGeom* vg);
+    void getPres(const int& idx, float* pres);
     void getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]);
     void setRetrievalResults(const int& idx, SlstrPixel& pix);
     
@@ -101,16 +103,20 @@ private:
     void readImgBinned(S3BasicImage<unsigned short>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
     void readSCloudS3SU(S3BasicImage<int>* s3Img, const std::string& ncdfName, const std::string varName);
+    void readImgBinned(S3BasicImage<float>* s3Img, const std::string& ncdfName, const std::string varName, 
+                               const NcdfImageType& imgType);
     void readImgBinned(S3BasicImage<double>* s3Img, const std::string& ncdfName, const std::string varName, 
                                const NcdfImageType& imgType);
     void getFlagImg(S3BasicImage<unsigned short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeomImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
+    void getBinPresImg(S3BasicImage<float>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void split(const std::string& s, char c, std::vector<std::string>& v);
     void readImageProp(S3MetaData* s3md, ImageProperties* imgProp);
     void readImageProp(const netCDF::NcFile& ncF, ImageProperties* imgProp);
     void getVarAttSafely(S3BasicImage<short>* s3Img, netCDF::NcVar& imgVar);
+    void getVarAttSafely(S3BasicImage<float>* s3Img, netCDF::NcVar& imgVar);
     void getVarAttSafely(S3BasicImage<double>* s3Img, netCDF::NcVar& imgVar);
     bool hasAtt(const netCDF::NcVar& var, const std::string& attName);
     void readIrrad(double irrad[][N_SLSTR_BANDS]);

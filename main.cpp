@@ -36,7 +36,8 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<float>& img);
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<double>& img);
 void computeOutputImageProp(ImageProperties* outputImgProp, const ImageProperties& inputImgProp, const int& winSize);
-
+bool isPixelValidOcean(SlstrPixel *pixel, const InputParameter& pars);
+float calcPrevFF(S3BasicImage<float> *fineTotalFrac, int x, int y);
 
 /*
  *
@@ -57,7 +58,7 @@ int main(int argc, char** argv) {
         s3Data.readNcdf(outImgProp);
 
         t2 = timer();
-        printf("Runtime %f seconds\n", (t2 - t1));
+        printf("Runtime %f seconds\n", (float)(t2 - t1));
 
         s3Data.convRad2Refl();
         s3Data.verifyInput();
@@ -79,10 +80,10 @@ int main(int argc, char** argv) {
         AtmosphericLut lut(pars.atmLutFileName);
 
         t2 = timer();
-        printf("Time to read Luts %f seconds\n", t2 - t1);
+        printf("Time to read Luts %f seconds\n", (float)(t2 - t1));
 
         SlstrPixel slstrPixel;
-        int idx, nPix=0;
+        int idx, nPix=1;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
 //        for (slstrPixel.x = 129; slstrPixel.x < 130; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
@@ -90,18 +91,22 @@ int main(int argc, char** argv) {
 //            for (slstrPixel.y = 111; slstrPixel.y < 112; slstrPixel.y++){
 //                fprintf(stdout, "processing %5d / %5d\n", slstrPixel.x, slstrPixel.y); fflush(stdout);
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
+                slstrPixel.qflag = 0;
+                slstrPixel.prevFineFrac = 0;
                 if ((slstrPixel.y > 0 ) && (s3Data.isValidPixel(idx))){
                     s3Data.getGeoPos(idx, &slstrPixel.geo_pos);
                     s3Data.getViewGeom(idx, &slstrPixel.geom);
-
-                    slstrPixel.pAlt = DEFAULT_PALT;
+                    s3Data.getPres(idx, &slstrPixel.pAlt);
+                    //slstrPixel.pAlt = DEFAULT_PALT;
                     slstrPixel.ocn_wind_speed = DEFAULT_WDSP;
                     slstrPixel.ocn_wind_dir   = DEFAULT_WDIR;
                     slstrPixel.ocn_pigment    = DEFAULT_PIG;
 
-                    slstrPixel.qflag = s3Data.flags.img[idx];
                     slstrPixel.view_clear[0] = ((s3Data.flags.img[idx] & (4+1)) > 0);
                     slstrPixel.view_clear[1] = ((s3Data.flags.img[idx] & (8+2)) > 0);
+                    setBit(&slstrPixel.qflag, CLR_LAND, ((s3Data.flags.img[idx] & (3)) == 3));
+                    setBit(&slstrPixel.qflag, CLR_OCEAN_N, ((s3Data.flags.img[idx] & (4)) > 0));
+                    setBit(&slstrPixel.qflag, CLR_OCEAN_F, ((s3Data.flags.img[idx] & (8)) > 0));
 
                     s3Data.getToaReflec(idx, slstrPixel.tarr);
                     if (slstrPixel.x == -1 && slstrPixel.y == -1){
@@ -125,6 +130,8 @@ int main(int argc, char** argv) {
                         slstrPixel.lutpars.vzani = lut.getInterPar(slstrPixel.geom.nad_sat_zen, lut.vzaD);
                         slstrPixel.lutpars.vzafi = lut.getInterPar(slstrPixel.geom.for_sat_zen, lut.vzaD);
 
+                        if (slstrPixel.pAlt > lut.presD.max) slstrPixel.pAlt = lut.presD.max;
+                        if (slstrPixel.pAlt < lut.presD.min) slstrPixel.pAlt = lut.presD.min;
                         slstrPixel.lutpars.pAlti = lut.getInterPar(slstrPixel.pAlt, lut.presD);
 
                         slstrPixel.lutpars.ocn_razni = ocnLut.getInterPar(slstrPixel.geom.razn, ocnLut.razD);
@@ -138,17 +145,21 @@ int main(int argc, char** argv) {
                         slstrPixel.rho_glint[0] = slstrPixel.rho_surf[3][0];
                         slstrPixel.rho_glint[1] = slstrPixel.rho_surf[3][1];
 
+                        slstrPixel.prevFineFrac = calcPrevFF(&s3Data.s3AerFracImgs[0], slstrPixel.x, slstrPixel.y);
+
                         AodRetrieval retrieval(slstrPixel, lut, ocnLut);
                         if ((s3Data.flags.img[idx] & 15) == 3){
                             //clear land in both views
                             retrieval.retrieveAodSizeBrent(false);
+                            s3Data.setRetrievalResults(idx, slstrPixel);
+                            nPix++;
                         }
-                        else {
+                        else if (isPixelValidOcean(&slstrPixel, pars)) {
                             //clear ocean in either view
                             retrieval.retrieveAodSizeBrent(true);
+                            s3Data.setRetrievalResults(idx, slstrPixel);
+                            nPix++;
                         }
-                        s3Data.setRetrievalResults(idx, slstrPixel);
-                        nPix++;
                     }
                     catch (std::range_error){
                         fprintf(stderr, "skipping pixel, is not inside LUT\n");
@@ -167,7 +178,7 @@ int main(int argc, char** argv) {
 
         // writing radiance data to ncdf file
         t1 = timer();
-        printf("Time to retrieve AOD %f seconds\n", t1 - t2);
+        printf("Time to retrieve AOD %f seconds\n", (float)(t1 - t2));
 /*******/
         if (nPix>0){
             cout << "writing: " << pars.aodOutName << endl;
@@ -192,14 +203,16 @@ int main(int argc, char** argv) {
                     /**/
                 }
 
-                addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[iView]);
-                addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3SzaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3SaaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
             }
-            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+            s3Data.s3LatImgs[0].name = "latitude";
+            addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[0]);
+            s3Data.s3LonImgs[0].name = "longitude";
+            addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[0]);
+            for (int iBand = 0; iBand < 1 /*N_SLSTR_BANDS*/; iBand++){
                 addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
             }
             for (int i = 0; i < 3; i++){
@@ -207,11 +220,12 @@ int main(int argc, char** argv) {
             }
             addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3UncImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3PresImg);
             addWriteVar(&ncOut, dimVec, s3Data.flags);
 
             ncOut.close();
             t2 = timer();
-            printf("Runtime %f seconds\n", t2 - t1);
+            printf("Runtime %f seconds\n", (float)(t2 - t1));
         }
         else {
             printf("%s\nNo valid pixels to process\n", pars.s3MD.productName.c_str());
@@ -256,6 +270,12 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+/**
+ * netcdf Helper routine to add and write an image to the netcdf file
+ * @param ncOut - netCdf file id
+ * @param dimVec - vector of dimensions for that variable
+ * @param img - the image variable
+ */
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<signed char>& img){
     NcVar var = ncOut->addVar(img.name, ncByte, dimVec);
 
@@ -340,6 +360,13 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     var.putVar(img.img);
 }
 
+/**
+ * compute properties of the resulting AOD product images
+ * based on the size of the input nadir image and the binning parameters
+ * @param outputImgProp
+ * @param inputImgProp
+ * @param winSize
+ */
 void computeOutputImageProp(ImageProperties* outputImgProp, const ImageProperties& inputImgProp, const int& winSize){
 
     if (winSize < 1) {
@@ -368,3 +395,53 @@ void computeOutputImageProp(ImageProperties* outputImgProp, const ImagePropertie
     }
 }
 
+/**
+ * test if the current pixel is at least in one view not glint contaminated
+ * @param pixel
+ * @param pars
+ * @return valid
+ */
+bool isPixelValidOcean(SlstrPixel *pixel, const InputParameter& pars) {
+    bool ok = false;
+    int j;
+    
+    if (pixel->view_clear[0]){
+        ok = ok || (pixel->rho_glint[0] < GLINT_THRS);
+        setBit(&pixel->qflag, GLINT_NADIR, (pixel->rho_glint[0] >= GLINT_THRS));
+    }
+    if (pixel->view_clear[1]){
+        ok = ok || (pixel->rho_glint[1] < GLINT_THRS);
+        setBit(&pixel->qflag, GLINT_FWARD, (pixel->rho_glint[1] >= GLINT_THRS));
+    }
+    return ok;
+}
+
+/**
+ * compute an average of the previously retrieved fine mode fraction 
+ * surrounding the current pixel at (x/y)
+ * @param image of fineTotalFrac 
+ * @param x
+ * @param y
+ * @return previous fine mode fraction
+ */
+float calcPrevFF(S3BasicImage<float> *fineTotalFrac, int x, int y) {
+    float fmf, prevFF = 0, w, weight = 0;
+    int ix, iy, xs, ys;
+    xs = x - 5;
+    ys = y - 5;
+
+    for (ix = x; ((ix >= 0) && (ix >= xs)); ix -= 1) {
+        for (iy = ((x == ix)?(y - 1):(y + 2)); ((iy >= 0) && (iy >= ys)); iy -= 1) {
+            fmf = fineTotalFrac->img[ix + iy * fineTotalFrac->imgP.width];
+            if (fmf > 0) {
+                w = 1 / ( pow((ix-x),2) + pow((iy-y),2) );
+                weight += w;
+                prevFF += w * fmf;
+            }
+        }
+    }
+    if (weight > 1e-4) {
+        return (prevFF / weight);
+    }
+    return 0;
+}

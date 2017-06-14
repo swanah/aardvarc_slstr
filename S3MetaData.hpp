@@ -48,6 +48,8 @@
         static const std::string SAA_NAME[];
         static const std::string VZA_NAME[];
         static const std::string VAA_NAME[];
+        static const std::string MET_NAME;
+        static const std::string PRES_NAME;
         static const std::string FLAGS_NAME[];
         static const std::string CONFID_NAME[];
         static const std::string BASIC_CLOUD_NAME[];

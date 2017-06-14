@@ -20,7 +20,7 @@
 #define M_PI		3.14159265358979323846
 #endif
 
-#define N_SLSTR_BANDS 4
+#define N_SLSTR_BANDS 5
 #define N_SLSTR_VIEWS 2
 #define N_DETECTORS 4
 
@@ -166,7 +166,7 @@ struct SlstrPixel{
     float ocn_pigment;
     float fclr_lnd;
     float fclr_ocn[N_SLSTR_VIEWS];
-    char  view_clear[N_SLSTR_VIEWS];
+    bool  view_clear[N_SLSTR_VIEWS];
     char mixOK, range;
     char dims;
     unsigned short qflag;

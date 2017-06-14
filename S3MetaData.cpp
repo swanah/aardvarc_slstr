@@ -33,6 +33,8 @@
     const std::string S3MetaData::VZA_NAME[] = {"sat_zenith_tn", "sat_zenith_to"};
     const std::string S3MetaData::VAA_NAME[] = {"sat_azimuth_tn", "sat_azimuth_to"};
     const std::string S3MetaData::FLAGS_NAME[] = {"flags_an", "flags_ao"};
+    const std::string S3MetaData::MET_NAME = "met_tx";
+    const std::string S3MetaData::PRES_NAME = "surface_pressure_tx";
     const std::string S3MetaData::CONFID_NAME[] = {"confidence_an", "confidence_ao"};
     const std::string S3MetaData::BASIC_CLOUD_NAME[] = {"cloud_an", "cloud_ao"};
     const std::string S3MetaData::S3SU_CLOUD_FNAME = "sCloudS3SU";
@@ -257,6 +259,11 @@ void S3MetaData::readImageInfo(TiXmlNode* node, ImageProperties* imgInfo){
     imgInfo->nPix = imgInfo->width * imgInfo->height;
 }
 
+/**
+ * verify that the image properties (width, height, etc.)
+ * are positive non zero values
+ * @param imgProp
+ */
 void S3MetaData::assertValidImgProp(const ImageProperties& imgProp){
     if (  (imgProp.width <= 0) || (imgProp.height <= 0)
             || (imgProp.xRes  <= 0) || (imgProp.yRes   <= 0)

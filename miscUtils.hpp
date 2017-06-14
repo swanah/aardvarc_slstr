@@ -22,6 +22,7 @@ void trimLine(std::string& s);
 void splitLine(const std::string& s, std::vector<std::string>& words);
 double timer();
 void setBit(unsigned short *flag, unsigned short bitvalue, char test);
+void setBit(short *flag, short bitvalue, char test);
 double intAng(double a, double b, double w);
 bool fileExists(const std::string& s);
 bool isDir(const std::string& s);

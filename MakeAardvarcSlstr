@@ -19,4 +19,7 @@ aardvarc: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCDIR)
 
 clean:
+	rm $(wildcard *.o) aardvarc
+
+clean-all:
 	rm $(OBJ) aardvarc
