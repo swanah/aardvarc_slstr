@@ -81,7 +81,7 @@ public:
         fmin = brentAod.fmin;
         pix.aod = brentAod.xmin;
         penalty = (fot - pix.lutpars.mix_frac[0]);
-        penalty *= penalty;
+        //penalty *= penalty;
         //fmin += 5*penalty + 2*fmin*penalty ;
         //fmin += fmin * pow(penalty, 2);
         fmin += 25 * pow(penalty, 4);
@@ -146,9 +146,9 @@ public:
                 //m_error = m_error_offset[i] + pix.RR[i][j]*pix.RR[i][j] * m_error_gain[i];
 
                 // compute o_error view dependent
-                y = (pix.tarr[i][j] + dToa - pix.inv_coef[i][j].rPath) / pix.inv_coef[i][j].tGas;
-                y /= (pix.inv_coef[i][j].tDown * pix.inv_coef[i][j].tUp);
-                *dRsurf_dToa = fabs((y / (1.0 + pix.inv_coef[i][j].spherAlb * y)) - pix.RR[i][j]) / dToa;
+                //y = (pix.tarr[i][j] + dToa - pix.inv_coef[i][j].rPath) / pix.inv_coef[i][j].tGas;
+                //y /= (pix.inv_coef[i][j].tDown * pix.inv_coef[i][j].tUp);
+                //*dRsurf_dToa = fabs((y / (1.0 + pix.inv_coef[i][j].spherAlb * y)) - pix.RR[i][j]) / dToa;
 
                 //y = (pix.tarr[i][j] + dToa) * pix.inv_coef[i][j].cfac * pix.inv_coef[i][j].xa - pix.inv_coef[i][j].xb;
                 //dRsurf_dToa = fabs((y / (1.0 + y * pix.inv_coef[i][j].xc)) - pix.RR[i][j]) / dToa;
@@ -186,14 +186,14 @@ public:
             }
         }
 
-        lim = 0.03; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0;
-        lim = 0.02; if (p[1] < lim) tot = tot + (lim - p[1])*(lim - p[1])*1000.0;
-        lim = 0.01; if (p[2] < lim) tot = tot + (lim - p[2])*(lim - p[2])*1000.0;
-        lim = 0.01; if (p[3] < lim) tot = tot + (lim - p[3])*(lim - p[3])*1000.0;
-        lim = 0.01; if (p[4] < lim) tot = tot + (lim - p[4])*(lim - p[4])*1000.0;
-        lim = 0.49; if (p[5] < lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0;
-        lim = 0.51; if (p[5] > lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0;
-        lim = 0.20; if (p[6] < lim) tot = tot + (lim - p[6])*(lim - p[6])*1000.0;
+        lim = 0.03; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0; //w[550]
+        lim = 0.02; if (p[1] < lim) tot = tot + (lim - p[1])*(lim - p[1])*1000.0; //w[659]
+        lim = 0.01; if (p[2] < lim) tot = tot + (lim - p[2])*(lim - p[2])*1000.0; //w[865]
+        lim = 0.01; if (p[3] < lim) tot = tot + (lim - p[3])*(lim - p[3])*1000.0; //w[1610]
+        lim = 0.01; if (p[4] < lim) tot = tot + (lim - p[4])*(lim - p[4])*1000.0; //w[2250]
+        lim = 0.49; if (p[5] < lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0; //p[nadir]
+        lim = 0.51; if (p[5] > lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0; //p[nadir]
+        lim = 0.20; if (p[6] < lim) tot = tot + (lim - p[6])*(lim - p[6])*1000.0; //p[oblique]
         //lim = 1.20; if (p[5] > lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0;
     /*
         lim = 0.01; if (p[0 + 1] < lim) tot = tot + (lim - p[0 + 1])*(lim - p[0 + 1])*1000.0;
@@ -304,14 +304,14 @@ public:
         pix.aod=tau;
         atmLut.psInv6s(&pix, tau);
 
-        pix.ndvi = (pix.RR[2][0] - pix.RR[1][0]) / (pix.RR[2][0] + pix.RR[1][0]);
+        //pix.ndvi = (pix.RR[2][0] - pix.RR[1][0]) / (pix.RR[2][0] + pix.RR[1][0]);
         //pix.ndvi = (pix.tarr[2][0] - pix.tarr[1][0]) / (pix.tarr[2][0] + pix.tarr[1][0]);
-        pix.ndvi_veg_weight = (1.0 - 0.0) / (0.35 - 0.15) * (pix.ndvi - 0.15);
-        if (pix.ndvi_veg_weight < 0) pix.ndvi_veg_weight = 0.0;
-        if (pix.ndvi_veg_weight > 1) pix.ndvi_veg_weight = 1.0;
-        pix.dust_weight = (0.0 - 1.0) / (0.6 - 0.4) * (pix.tarr[3][0] - 0.6);
-        if (pix.dust_weight < 0) pix.dust_weight = 0.0;
-        if (pix.dust_weight > 1) pix.dust_weight = 1.0;
+        //pix.ndvi_veg_weight = (1.0 - 0.0) / (0.35 - 0.15) * (pix.ndvi - 0.15);
+        //if (pix.ndvi_veg_weight < 0) pix.ndvi_veg_weight = 0.0;
+        //if (pix.ndvi_veg_weight > 1) pix.ndvi_veg_weight = 1.0;
+        //pix.dust_weight = (0.0 - 1.0) / (0.6 - 0.4) * (pix.tarr[3][0] - 0.6);
+        //if (pix.dust_weight < 0) pix.dust_weight = 0.0;
+        //if (pix.dust_weight > 1) pix.dust_weight = 1.0;
 
         for (i = 0; i < N_SLSTR_BANDS; i++){
             for (j = 0; j < N_SLSTR_VIEWS; j++){

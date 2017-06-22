@@ -91,8 +91,16 @@ int main(int argc, char** argv) {
 //            for (slstrPixel.y = 111; slstrPixel.y < 112; slstrPixel.y++){
 //                fprintf(stdout, "processing %5d / %5d\n", slstrPixel.x, slstrPixel.y); fflush(stdout);
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
+
                 slstrPixel.qflag = 0;
                 slstrPixel.prevFineFrac = 0;
+                slstrPixel.ndvi = 1;
+                slstrPixel.ndvi_veg_weight = 1;
+                slstrPixel.dust_weight = 0;
+                slstrPixel.aod = -1;
+                slstrPixel.ax = lut.aodD.min;
+                slstrPixel.cx = lut.aodD.max;
+
                 if ((slstrPixel.y > 0 ) && (s3Data.isValidPixel(idx))){
                     s3Data.getGeoPos(idx, &slstrPixel.geo_pos);
                     s3Data.getViewGeom(idx, &slstrPixel.geom);
