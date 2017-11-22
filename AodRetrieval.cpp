@@ -97,6 +97,26 @@ void AodRetrieval::retrieveAodSizeBrent(bool isOcean){
 
 }
 
+void AodRetrieval::invertFixedAtm(bool isOcean, const float& aod, const float& fot, const float& wof, const float& doc){
+    
+    pix.aod = aod;
+    
+    pix.lutpars.mix_frac[0] = fot; // fot
+    pix.lutpars.mix_frac[1] = wof; // wof
+    pix.lutpars.mix_frac[2] = doc; // doc
+    
+    
+    pix.lutpars.mixing[0] = ((1 - pix.lutpars.mix_frac[0]) * pix.lutpars.mix_frac[2])*100; // Dust
+    pix.lutpars.mixing[1] = ((1 - pix.lutpars.mix_frac[0]) * (1 - pix.lutpars.mix_frac[2]))*100; // Sea Salt
+    pix.lutpars.mixing[2] = (pix.lutpars.mix_frac[0] * (1 - pix.lutpars.mix_frac[1]))*100; // Strong Abs
+    pix.lutpars.mixing[3] = (pix.lutpars.mix_frac[0] * pix.lutpars.mix_frac[1])*100; // Weak Abs
+    atmLut.getTetrahedronPoints(&pix.lutpars, false);
+    pix.lutpars.ocn_mi = ocnLut.getInterPar(pix.lutpars.mix_frac[0], ocnLut.modelD); //(fot - MVM_MIN) / MVM_INT;
+    
+    atmLut.psInv6s(&pix, aod);
+    
+}
+
 
 //
 // private

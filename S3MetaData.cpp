@@ -246,6 +246,7 @@ void S3MetaData::readImageInfo(TiXmlNode* node, ImageProperties* imgInfo){
     std::string s = node->FirstChild("sentinel3:startOffset")
             ->FirstChild()->ToText()->ValueStr();
     imgInfo->yOff = StringToNumber<int>(s);
+    imgInfo->yOff *= -1; // along track offsets should be negative as they are above/before the image
     s = node->FirstChild("sentinel3:trackOffset")
             ->FirstChild()->ToText()->ValueStr();
     imgInfo->xOff = StringToNumber<int>(s);
@@ -267,7 +268,7 @@ void S3MetaData::readImageInfo(TiXmlNode* node, ImageProperties* imgInfo){
 void S3MetaData::assertValidImgProp(const ImageProperties& imgProp){
     if (  (imgProp.width <= 0) || (imgProp.height <= 0)
             || (imgProp.xRes  <= 0) || (imgProp.yRes   <= 0)
-            || (imgProp.xOff  < 0) || (imgProp.yOff   < 0) ){
+            || (imgProp.xOff  < 0) /*|| (imgProp.yOff   < 0)*/ ){
 
         std::string msg(typeid(*this).name());
         msg.append(": Image properties could not be read from manifest!\n");

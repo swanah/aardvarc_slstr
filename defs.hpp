@@ -24,6 +24,8 @@
 #define N_SLSTR_VIEWS 2
 #define N_DETECTORS 4
 
+#define N_AER_FRAC 4
+
 #define N_CCI_LUT 35
 
 #define   DEFAULT_PALT 1013.0 // Default surface pressure

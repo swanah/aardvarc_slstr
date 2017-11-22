@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/AtmosphericLut.o \
 	${OBJECTDIR}/InputParameter.o \
 	${OBJECTDIR}/OceanReflLut.o \
+	${OBJECTDIR}/S3CciL2Writer.o \
 	${OBJECTDIR}/S3MetaData.o \
 	${OBJECTDIR}/S3NcdfData.o \
 	${OBJECTDIR}/main.o \
@@ -98,6 +99,11 @@ ${OBJECTDIR}/OceanReflLut.o: OceanReflLut.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -I/cygdrive/P/C++/NR `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OceanReflLut.o OceanReflLut.cpp
+
+${OBJECTDIR}/S3CciL2Writer.o: S3CciL2Writer.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -I/cygdrive/P/C++/NR `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3CciL2Writer.o S3CciL2Writer.cpp
 
 ${OBJECTDIR}/S3MetaData.o: S3MetaData.cpp 
 	${MKDIR} -p ${OBJECTDIR}

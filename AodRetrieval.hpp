@@ -153,8 +153,8 @@ public:
                 //y = (pix.tarr[i][j] + dToa) * pix.inv_coef[i][j].cfac * pix.inv_coef[i][j].xa - pix.inv_coef[i][j].xb;
                 //dRsurf_dToa = fabs((y / (1.0 + y * pix.inv_coef[i][j].xc)) - pix.RR[i][j]) / dToa;
 
-                o_error = (inst_frac_error[i] * pix.RR[i][j] * *dRsurf_dToa);
                 //o_error = (0.5 * inst_frac_error[i] * pix.tarr[i][j] * *(dRsurf_dToa + i*N_SLSTR_VIEWS + j));
+                o_error = (inst_frac_error[i] * pix.tarr[i][j] * *(dRsurf_dToa + i*N_SLSTR_VIEWS + j));
                 o_error = o_error * o_error;
 
                 //Rpath = pix.inv_coef[i][j].xb / (pix.inv_coef[i][j].xa * pix.inv_coef[i][j].cfac);
@@ -396,6 +396,7 @@ public:
     ~AodRetrieval();
 
     void retrieveAodSizeBrent(bool isOcean);
+    void invertFixedAtm(bool isOcean, const float& aod, const float& fot, const float& wof, const float& doc);
 
 private:
     AodRetrieval();

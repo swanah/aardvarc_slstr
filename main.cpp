@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
         cout << pars.s3MD.productName << endl;
 
         /* reading nadir and oblique radiance images */
+        cout << "reading product" << endl;
         double t1, t2;
         t1 = timer();
 
@@ -66,8 +67,10 @@ int main(int argc, char** argv) {
         int& imgWidth  = outImgProp.width;  //s3Data.s3MetaData.slstrPInfo.nadirImg0500m.width;
         int& imgHeight = outImgProp.height; //s3Data.s3MetaData.slstrPInfo.nadirImg0500m.height;
 
+        float nPix=1;
 /******/
 
+        cout << "reading LUTs" << endl;
         t1 = timer();
 
         // read aerosol climatology
@@ -83,12 +86,12 @@ int main(int argc, char** argv) {
         printf("Time to read Luts %f seconds\n", (float)(t2 - t1));
 
         SlstrPixel slstrPixel;
-        int idx, nPix=1;
+        int idx;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
-//        for (slstrPixel.x = 129; slstrPixel.x < 130; slstrPixel.x++){
+//        for (slstrPixel.x = 127; slstrPixel.x < 128; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
             for (slstrPixel.y = 0; slstrPixel.y < imgHeight; slstrPixel.y++){
-//            for (slstrPixel.y = 111; slstrPixel.y < 112; slstrPixel.y++){
+//            for (slstrPixel.y = 67; slstrPixel.y < 68; slstrPixel.y++){
 //                fprintf(stdout, "processing %5d / %5d\n", slstrPixel.x, slstrPixel.y); fflush(stdout);
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
 
@@ -101,11 +104,10 @@ int main(int argc, char** argv) {
                 slstrPixel.ax = lut.aodD.min;
                 slstrPixel.cx = lut.aodD.max;
 
-                if ((slstrPixel.y > 0 ) && (s3Data.isValidPixel(idx))){
+                if (s3Data.isValidPixel(idx)){
                     s3Data.getGeoPos(idx, &slstrPixel.geo_pos);
                     s3Data.getViewGeom(idx, &slstrPixel.geom);
                     s3Data.getPres(idx, &slstrPixel.pAlt);
-                    //slstrPixel.pAlt = DEFAULT_PALT;
                     slstrPixel.ocn_wind_speed = DEFAULT_WDSP;
                     slstrPixel.ocn_wind_dir   = DEFAULT_WDIR;
                     slstrPixel.ocn_pigment    = DEFAULT_PIG;
@@ -116,7 +118,9 @@ int main(int argc, char** argv) {
                     setBit(&slstrPixel.qflag, CLR_OCEAN_N, ((s3Data.flags.img[idx] & (4)) > 0));
                     setBit(&slstrPixel.qflag, CLR_OCEAN_F, ((s3Data.flags.img[idx] & (8)) > 0));
 
-                    s3Data.getToaReflec(idx, slstrPixel.tarr);
+                    //s3Data.getToaReflec(idx, slstrPixel.tarr);
+                    s3Data.getToaReflecF(idx, slstrPixel.tarr);
+                    
                     if (slstrPixel.x == -1 && slstrPixel.y == -1){
                         printf("Pixel (%d/%d) is valid and at %s\n", slstrPixel.x, slstrPixel.y, slstrPixel.geo_pos.toCstr());
                         printf("Pixel SZA: %f SAA: %f VZA: %f VAA: %f RAZ: %f\n", slstrPixel.geom.nad_sol_zen, slstrPixel.geom.nad_sol_azim, slstrPixel.geom.nad_sat_zen, slstrPixel.geom.nad_sat_azim, slstrPixel.geom.razn);
@@ -126,7 +130,8 @@ int main(int argc, char** argv) {
                     }
                     //get mixing paramter
                     //prep lut interpolation
-                    aerClim.getMixPercentages(slstrPixel.geo_pos, slstrPixel.lutpars.mixing, slstrPixel.lutpars.mix_frac, &slstrPixel.lutpars.climAod);
+                    //aerClim.getMixPercentages(slstrPixel.geo_pos, slstrPixel.lutpars.mixing, slstrPixel.lutpars.mix_frac, &slstrPixel.lutpars.climAod);
+                    aerClim.getMixPercentagesInt(slstrPixel.geo_pos, slstrPixel.lutpars.mixing, slstrPixel.lutpars.mix_frac, &slstrPixel.lutpars.climAod);
                     lut.getTetrahedronPoints(&slstrPixel.lutpars, false);
                     try {
                         slstrPixel.lutpars.razni = lut.getInterPar(slstrPixel.geom.razn, lut.razD);
@@ -153,18 +158,20 @@ int main(int argc, char** argv) {
                         slstrPixel.rho_glint[0] = slstrPixel.rho_surf[3][0];
                         slstrPixel.rho_glint[1] = slstrPixel.rho_surf[3][1];
 
-                        slstrPixel.prevFineFrac = calcPrevFF(&s3Data.s3AerFracImgs[0], slstrPixel.x, slstrPixel.y);
+                        slstrPixel.prevFineFrac = calcPrevFF(&s3Data.s3AerFracImgs[1], slstrPixel.x, slstrPixel.y);
 
                         AodRetrieval retrieval(slstrPixel, lut, ocnLut);
                         if ((s3Data.flags.img[idx] & 15) == 3){
                             //clear land in both views
                             retrieval.retrieveAodSizeBrent(false);
+                            //retrieval.invertFixedAtm(false, 0.15, 0.9, 0.9, 0.86);
                             s3Data.setRetrievalResults(idx, slstrPixel);
                             nPix++;
                         }
                         else if (isPixelValidOcean(&slstrPixel, pars)) {
                             //clear ocean in either view
                             retrieval.retrieveAodSizeBrent(true);
+                            //retrieval.invertFixedAtm(false, 0.15, 0.9, 0.9, 0.86);
                             s3Data.setRetrievalResults(idx, slstrPixel);
                             nPix++;
                         }
@@ -199,7 +206,8 @@ int main(int argc, char** argv) {
 
             for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
                 for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
-                    addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
+                    addWriteVar(&ncOut, dimVec, s3Data.s3RadImgsF[iView][iBand]);
                     addWriteVar(&ncOut, dimVec, s3Data.s3SdrImgs[iView][iBand]);
                     /**
                     addWriteVar(&ncOut, dimVec, s3Data.s3RPathImgs[iView][iBand]);
@@ -215,21 +223,23 @@ int main(int argc, char** argv) {
                 addWriteVar(&ncOut, dimVec, s3Data.s3SaaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3RazImgs[iView]);
             }
             s3Data.s3LatImgs[0].name = "latitude";
             addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[0]);
             s3Data.s3LonImgs[0].name = "longitude";
             addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[0]);
-            for (int iBand = 0; iBand < 1 /*N_SLSTR_BANDS*/; iBand++){
+            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
                 addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
             }
-            for (int i = 0; i < 3; i++){
+            for (int i = 0; i < N_AER_FRAC; i++){
                 addWriteVar(&ncOut, dimVec, s3Data.s3AerFracImgs[i]);
             }
             addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3UncImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3PresImg);
             addWriteVar(&ncOut, dimVec, s3Data.flags);
+            addWriteVar(&ncOut, dimVec, s3Data.s3NPixImg);
 
             ncOut.close();
             t2 = timer();
@@ -239,23 +249,25 @@ int main(int argc, char** argv) {
             printf("%s\nNo valid pixels to process\n", pars.s3MD.productName.c_str());
         }
 
-        /* writing hi res flag data to ncdf file */
-        /*imgWidth  = s3Data.s3MetaData.slstrPInfo.nadirImg0500m.width;
-        imgHeight = s3Data.s3MetaData.slstrPInfo.nadirImg0500m.height;
-        replaceStringInPlace(s3Data.aodOutName, ".nc", "_flags.nc");
-        cout << "writing: " << s3Data.aodOutName << endl;
-        NcFile ncOut1(s3Data.aodOutName, NcFile::replace);
-        xDim = ncOut1.addDim("columns", imgWidth);
-        yDim = ncOut1.addDim("rows", imgHeight);
-        dimVec.clear();
+        /* writing hi res flag data to ncdf file *
+        imgWidth  = s3Data.pars.s3MD.slstrPInfo.nadirImg0500m.width;
+        imgHeight = s3Data.pars.s3MD.slstrPInfo.nadirImg0500m.height;
+        replaceStringInPlace(pars.aodOutName, ".nc", "_flags.nc");
+        cout << "writing: " << pars.aodOutName << endl;
+        NcFile ncOut1(pars.aodOutName, NcFile::replace);
+        NcDim xDim = ncOut1.addDim("columns", imgWidth);
+        NcDim yDim = ncOut1.addDim("rows", imgHeight);
+        std::vector<NcDim> dimVec;
         dimVec.push_back(yDim);
         dimVec.push_back(xDim);
 
         addWriteVar(&ncOut1, dimVec, s3Data.s3LandImg);
         addWriteVar(&ncOut1, dimVec, s3Data.s3CloudImg);
+        addWriteVar(&ncOut1, dimVec, s3Data.s3NanImg);
         addWriteVar(&ncOut1, dimVec, s3Data.s3ValidImg);
 
-        ncOut1.close();*/
+        ncOut1.close();
+        /**/
 
     }
     catch (exceptions::NcException& e){
@@ -287,7 +299,7 @@ int main(int argc, char** argv) {
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<signed char>& img){
     NcVar var = ncOut->addVar(img.name, ncByte, dimVec);
 
-    //var.setCompression(true, true, 5);
+    var.setCompression(true, true, 5);
 
     if (img.hasOffset){
         var.putAtt("add_offset", ncDouble, img.valOffset);
@@ -297,6 +309,10 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     }
     if (img.hasNoData){
         var.putAtt("_FillValue", ncByte, img.noData);
+    }
+    if (img.hasMinMax){
+        var.putAtt("valid_min", ncByte, img.validMin);
+        var.putAtt("valid_max", ncByte, img.validMax);
     }
     if (img.isSpecBand){
         var.putAtt("wavelength", ncFloat, img.wvl);
@@ -320,6 +336,10 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     if (img.hasNoData){
         var.putAtt("_FillValue", ncShort, img.noData);
     }
+    if (img.hasMinMax){
+        var.putAtt("valid_min", ncShort, img.validMin);
+        var.putAtt("valid_max", ncShort, img.validMax);
+    }
     if (img.isSpecBand){
         var.putAtt("wavelength", ncFloat, img.wvl);
     }
@@ -342,6 +362,10 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     if (img.hasNoData){
         var.putAtt("_FillValue", ncFloat, img.noData);
     }
+    if (img.hasMinMax){
+        var.putAtt("valid_min", ncFloat, img.validMin);
+        var.putAtt("valid_max", ncFloat, img.validMax);
+    }
     if (img.isSpecBand){
         var.putAtt("wavelength", ncFloat, img.wvl);
     }
@@ -361,6 +385,10 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     }
     if (img.hasNoData){
         var.putAtt("_FillValue", ncDouble, img.noData);
+    }
+    if (img.hasMinMax){
+        var.putAtt("valid_min", ncDouble, img.validMin);
+        var.putAtt("valid_max", ncDouble, img.validMax);
     }
     if (img.isSpecBand){
         var.putAtt("wavelength", ncFloat, img.wvl);
@@ -388,10 +416,10 @@ void computeOutputImageProp(ImageProperties* outputImgProp, const ImagePropertie
         outputImgProp->isBinned = true;
         outputImgProp->binSize = winSize;
         outputImgProp->width = inputImgProp.width / winSize;
-        if (inputImgProp.width > outputImgProp->width * winSize) outputImgProp->width++;
+        //if (inputImgProp.width > outputImgProp->width * winSize) outputImgProp->width++;
 
         outputImgProp->height = inputImgProp.height / winSize;
-        if (inputImgProp.height > outputImgProp->height * winSize) outputImgProp->height++;
+        //if (inputImgProp.height > outputImgProp->height * winSize) outputImgProp->height++;
 
         outputImgProp->nPix = outputImgProp->width * outputImgProp->height;
 

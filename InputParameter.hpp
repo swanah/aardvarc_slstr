@@ -37,7 +37,9 @@ public:
     
     bool useSCloudS3SU;
     std::string sCloudS3SUpath, sCloudS3SUname;
-    int winSize, offset, skip;
+    int winSize; //size of bin window
+    int offset;  //offset center bin = winSize/2
+    int skip;    //unused
     float szaLimit;
     float binValidThrs;
     bool doGeoSubset;

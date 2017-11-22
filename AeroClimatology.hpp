@@ -28,6 +28,7 @@ public:
     ~AeroClimatology();
     
     void getMixPercentages(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod);
+    void getMixPercentagesInt(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod);
     
 private:
     AeroClimatology();

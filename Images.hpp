@@ -28,6 +28,7 @@ public:
     ImageProperties imgP;
     bool hasScale, hasOffset;
     double valScale, valOffset;
+    bool hasMinMax;
     T validMin, validMax;
     T *img;
     bool hasNoData;
@@ -49,6 +50,7 @@ public:
     void getImgProperties(ImageProperties* imgProp);
     void setFillVal(const T& fillVal);
     void setScaleOffset(const double& scale, const double& offset);
+    void setWvl(const float& spectralWvl);
     void setValidLimits(const T& min, const T& max);
     bool isValidValue(const T& value);
     void copyVarAttFrom(const S3BasicImage& srcImg);
@@ -72,9 +74,14 @@ S3BasicImage<T>::S3BasicImage(const int& newWidth, const int& newHeight,
     imgP.xRes = xRes;
     imgP.yRes = yRes;
     hasScale = false;
+    valScale = 1.;
     hasOffset = false;
+    valOffset = 0.;
     hasNoData = false;
+    noData = std::numeric_limits<T>::quiet_NaN();
     isSpecBand = false;
+    wvl = 0.;
+    hasMinMax = false;
     validMin = std::numeric_limits<T>::min();
     validMax = std::numeric_limits<T>::max();
     img = new T[imgP.width * imgP.height];
@@ -84,9 +91,14 @@ template<class T>
 S3BasicImage<T>::S3BasicImage(const ImageProperties& newImgProp){
     imgP = newImgProp;
     hasScale = false;
+    valScale = 1.;
     hasOffset = false;
+    valOffset = 0.;
     hasNoData = false;
+    noData = std::numeric_limits<T>::quiet_NaN();
     isSpecBand = false;
+    wvl = 0.;
+    hasMinMax = false;
     validMin = std::numeric_limits<T>::min();
     validMax = std::numeric_limits<T>::max();
     img = new T[imgP.width * imgP.height];
@@ -96,13 +108,14 @@ template<class T>
 S3BasicImage<T>::S3BasicImage(const S3BasicImage& orig) {
     imgP = orig.imgP;
     hasScale = orig.hasScale;
-    valScale = orig.valOffset;
+    valScale = orig.valScale;
     hasOffset = orig.hasOffset;
     valOffset = orig.valOffset;
     hasNoData = orig.hasNoData;
     noData = orig.noData;
     isSpecBand = orig.isSpecBand;
     wvl = orig.wvl;
+    hasMinMax = orig.hasMinMax;
     validMin = orig.validMin;
     validMax = orig.validMax;
     int n = imgP.width*imgP.height;
@@ -126,6 +139,7 @@ S3BasicImage<T>& S3BasicImage<T>::operator=(const S3BasicImage& rhs) {
     std::swap(noData, lhs.noData);
     std::swap(isSpecBand, lhs.isSpecBand);
     std::swap(wvl, lhs.wvl);
+    std::swap(hasMinMax, lhs.hasMinMax);
     std::swap(validMin, lhs.validMin);
     std::swap(validMax, lhs.validMax);
     std::swap(img, lhs.img);
@@ -174,13 +188,27 @@ void S3BasicImage<T>::setScaleOffset(const double& scale, const double& offset){
 
 template<class T>
 inline void S3BasicImage<T>::setValidLimits(const T& min, const T& max){
+    hasMinMax = true;
     validMin = min;
     validMax = max;
 }
 
 template<class T>
+inline void S3BasicImage<T>::setWvl(const float& spectralWvl){
+    isSpecBand = true;
+    wvl = spectralWvl;
+}
+
+template<class T>
 inline bool S3BasicImage<T>::isValidValue(const T& value){
-    return ((value >= validMin) && (value <= validMax) && (hasNoData?(value != noData):true));
+    bool isValid = true;//(!std::isnan<T>(value)) && (!std::isinf<T>(value));
+    if (isValid && hasMinMax) {
+        isValid = (value >= validMin) && (value <= validMax);
+    }
+    if (isValid && hasNoData) {
+        isValid = (value != noData);
+    }
+    return isValid;
 }
 
 template<class T>
@@ -191,6 +219,7 @@ inline void S3BasicImage<T>::copyVarAttFrom(const S3BasicImage& srcImg){
     valOffset = srcImg.valOffset;
     hasScale = srcImg.hasScale;
     valScale = srcImg.valScale;
+    hasMinMax = srcImg.hasMinMax;
     validMin = srcImg.validMin;
     validMax = srcImg.validMax;
     isSpecBand = srcImg.isSpecBand;

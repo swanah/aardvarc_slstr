@@ -14,6 +14,7 @@
 #include <netcdf>
 #include <stdexcept>
 #include "AeroClimatology.hpp"
+#include "Interpolation.hpp"
 #include "defs.hpp"
 
 using namespace netCDF;
@@ -86,10 +87,37 @@ void AeroClimatology::getMixPercentages(const GeoPos& gp, float *mixPercentages,
     wof = weakOfFine[index];
     //wof = wof + 0.5 * ( 1 - wof );
     //wof = 0.95;
+    
     doc = dustOfCoarse[index];
     //doc = 0.5 * clim->dustOfCoarse[index];
     
     *climAod = aod[index];
+    mixFrac[0] = fot; 
+    mixFrac[1] = wof; 
+    mixFrac[2] = doc;
+
+    mixPercentages[0] = ((1 - fot) * doc)*100; // Dust
+    mixPercentages[1] = ((1 - fot) * (1 - doc))*100; // Sea Salt
+    mixPercentages[2] = (fot * (1 - wof))*100; // Strong Abs
+    mixPercentages[3] = (fot * wof)*100; // Weak Abs
+}
+
+void AeroClimatology::getMixPercentagesInt(const GeoPos& gp, float *mixPercentages, float *mixFrac, float *climAod) {
+    double x2 = (gp.lon - lon_start) / dlon;
+    double y2 = (gp.lat - lat_start) / dlat;
+    float fot, wof, doc;
+    
+    fot = interpol_2d_img(fineOfTotal, x2, y2, nx, ny, false);    
+    fot = (fot>0) ? fot : 0.05;
+    fot = (fot<1) ? fot : 0.95;
+
+    wof = interpol_2d_img(weakOfFine, x2, y2, nx, ny, false);    
+
+    //doc = fineOfTotal[((int)y2) * nx + (int)x2];
+    doc = interpol_2d_img(dustOfCoarse, x2, y2, nx, ny, false);    
+
+    *climAod = interpol_2d_img(aod, x2, y2, nx, ny, false);
+
     mixFrac[0] = fot; 
     mixFrac[1] = wof; 
     mixFrac[2] = doc;
