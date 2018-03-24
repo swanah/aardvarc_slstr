@@ -53,6 +53,7 @@ public:
     void setWvl(const float& spectralWvl);
     void setValidLimits(const T& min, const T& max);
     bool isValidValue(const T& value);
+    bool isValidValue(const T& value) const;
     void copyVarAttFrom(const S3BasicImage& srcImg);
     void initImgArray(const T initVal = 0);
 };
@@ -201,6 +202,18 @@ inline void S3BasicImage<T>::setWvl(const float& spectralWvl){
 
 template<class T>
 inline bool S3BasicImage<T>::isValidValue(const T& value){
+    bool isValid = true;//(!std::isnan<T>(value)) && (!std::isinf<T>(value));
+    if (isValid && hasMinMax) {
+        isValid = (value >= validMin) && (value <= validMax);
+    }
+    if (isValid && hasNoData) {
+        isValid = (value != noData);
+    }
+    return isValid;
+}
+
+template<class T>
+inline bool S3BasicImage<T>::isValidValue(const T& value) const {
     bool isValid = true;//(!std::isnan<T>(value)) && (!std::isinf<T>(value));
     if (isValid && hasMinMax) {
         isValid = (value >= validMin) && (value <= validMax);

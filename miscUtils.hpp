@@ -27,6 +27,9 @@ double intAng(double a, double b, double w);
 bool fileExists(const std::string& s);
 bool isDir(const std::string& s);
 bool createDirsUnix(const std::string& s);
+std::string getCurrentTimeStr();
+std::string convS3DateToCci(const std::string& s3DateTime);
+double parseTimeToSec1970(const std::string& s3DateTime);
 
 template<typename T>
 T StringToNumber(const std::string& numberAsString)

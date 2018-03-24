@@ -38,7 +38,7 @@ OceanReflLut::OceanReflLut(const std::string& lutName) {
     readDimVarFloat(&ncF, "sza", szaD);
     readLutVar(&ncF, "Rocean");
     
-    ncF.close();
+    //ncF.close();
 }
 
 OceanReflLut::~OceanReflLut() {

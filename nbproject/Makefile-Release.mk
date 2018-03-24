@@ -75,72 +75,72 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/aardvarc_slstr.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/aardvarc_slstr ${OBJECTFILES} ${LDLIBSOPTIONS}
 
-${OBJECTDIR}/AeroClimatology.o: AeroClimatology.cpp 
+${OBJECTDIR}/AeroClimatology.o: AeroClimatology.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AeroClimatology.o AeroClimatology.cpp
 
-${OBJECTDIR}/AodRetrieval.o: AodRetrieval.cpp 
+${OBJECTDIR}/AodRetrieval.o: AodRetrieval.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AodRetrieval.o AodRetrieval.cpp
 
-${OBJECTDIR}/AtmosphericLut.o: AtmosphericLut.cpp 
+${OBJECTDIR}/AtmosphericLut.o: AtmosphericLut.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/AtmosphericLut.o AtmosphericLut.cpp
 
-${OBJECTDIR}/InputParameter.o: InputParameter.cpp 
+${OBJECTDIR}/InputParameter.o: InputParameter.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/InputParameter.o InputParameter.cpp
 
-${OBJECTDIR}/OceanReflLut.o: OceanReflLut.cpp 
+${OBJECTDIR}/OceanReflLut.o: OceanReflLut.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/OceanReflLut.o OceanReflLut.cpp
 
-${OBJECTDIR}/S3CciL2Writer.o: S3CciL2Writer.cpp 
+${OBJECTDIR}/S3CciL2Writer.o: S3CciL2Writer.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3CciL2Writer.o S3CciL2Writer.cpp
 
-${OBJECTDIR}/S3MetaData.o: S3MetaData.cpp 
+${OBJECTDIR}/S3MetaData.o: S3MetaData.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3MetaData.o S3MetaData.cpp
 
-${OBJECTDIR}/S3NcdfData.o: S3NcdfData.cpp 
+${OBJECTDIR}/S3NcdfData.o: S3NcdfData.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/S3NcdfData.o S3NcdfData.cpp
 
-${OBJECTDIR}/main.o: main.cpp 
+${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
-${OBJECTDIR}/miscUtils.o: miscUtils.cpp 
+${OBJECTDIR}/miscUtils.o: miscUtils.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/miscUtils.o miscUtils.cpp
 
-${OBJECTDIR}/tinyxml/tinystr.o: tinyxml/tinystr.cpp 
+${OBJECTDIR}/tinyxml/tinystr.o: tinyxml/tinystr.cpp
 	${MKDIR} -p ${OBJECTDIR}/tinyxml
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxml/tinystr.o tinyxml/tinystr.cpp
 
-${OBJECTDIR}/tinyxml/tinyxml.o: tinyxml/tinyxml.cpp 
+${OBJECTDIR}/tinyxml/tinyxml.o: tinyxml/tinyxml.cpp
 	${MKDIR} -p ${OBJECTDIR}/tinyxml
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxml/tinyxml.o tinyxml/tinyxml.cpp
 
-${OBJECTDIR}/tinyxml/tinyxmlerror.o: tinyxml/tinyxmlerror.cpp 
+${OBJECTDIR}/tinyxml/tinyxmlerror.o: tinyxml/tinyxmlerror.cpp
 	${MKDIR} -p ${OBJECTDIR}/tinyxml
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxml/tinyxmlerror.o tinyxml/tinyxmlerror.cpp
 
-${OBJECTDIR}/tinyxml/tinyxmlparser.o: tinyxml/tinyxmlparser.cpp 
+${OBJECTDIR}/tinyxml/tinyxmlparser.o: tinyxml/tinyxmlparser.cpp
 	${MKDIR} -p ${OBJECTDIR}/tinyxml
 	${RM} "$@.d"
 	$(COMPILE.cc) -O3 -I/cygdrive/P/C++/NR `pkg-config --cflags boost_filesystem` `pkg-config --cflags netcdf` `pkg-config --cflags netcdf-cxx4`   -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/tinyxml/tinyxmlparser.o tinyxml/tinyxmlparser.cpp
@@ -151,7 +151,6 @@ ${OBJECTDIR}/tinyxml/tinyxmlparser.o: tinyxml/tinyxmlparser.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/aardvarc_slstr.exe
 
 # Subprojects
 .clean-subprojects:

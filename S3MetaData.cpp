@@ -8,6 +8,7 @@
 #include <iostream>
 #include <typeinfo>
 #include <stdexcept>
+#include <sstream>
 
 #include "tinyxml/tinyxml.h"
 #include "miscUtils.hpp"
@@ -40,6 +41,7 @@
     const std::string S3MetaData::S3SU_CLOUD_FNAME = "sCloudS3SU";
     const std::string S3MetaData::S3SU_CLOUD_VNAME[] = {"cld_n", "cld_o"};
     const std::string S3MetaData::TIME_NAME[] = {"time_an", "time_ao"};
+    const std::string S3MetaData::TIME_STAMP_NAME = "time_stamp_a";
     
     
 /*    
@@ -67,8 +69,7 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
         fclose(f);*/
         
         TiXmlHandle hDoc(&doc);
-        //TiXmlElement* metaDataElement = hDoc.FirstChildElement("xfdu:XFDU").FirstChildElement("metadataSection").Element();
-
+        
         // get metaDataSection as Element
         TiXmlElement* mdSectionEle = hDoc.FirstChild("xfdu:XFDU").FirstChild("metadataSection").ToElement();
         
@@ -77,7 +78,6 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
         for (elem = mdSectionEle->FirstChildElement("metadataObject"); elem; elem = elem->NextSiblingElement("metadataObject")){
             if (elem) {
                 const std::string* nodeId = elem->Attribute(std::string("ID"));
-                //printf("Node: %s  Obj: %s\n", elem->Value(), nodeId->c_str());
                 TiXmlElement* subEle;
                 if (*nodeId == "acquisitionPeriod"){
                     subEle = elem->FirstChildElement("metadataWrap")->FirstChildElement("xmlData")
@@ -99,6 +99,16 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
                                    ->FirstChildElement("slstr:slstrProductInformation");
                     readSlstrProdInfo(subEle);
                 }
+                else if (*nodeId == "measurementOrbitReference"){
+                    subEle = elem->FirstChildElement("metadataWrap")->FirstChildElement("xmlData")
+                                   ->FirstChildElement("sentinel-safe:orbitReference");
+                    readOrbitRefInfo(subEle);
+                }
+                else if (*nodeId == "processing"){
+                    subEle = elem->FirstChildElement("metadataWrap")->FirstChildElement("xmlData")
+                                   ->FirstChildElement("sentinel-safe:processing");
+                    readProcessingInfo(subEle);
+                }
             }
         }
         
@@ -112,7 +122,7 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
     assertValidImgProp(slstrPInfo.obliqImg0500m);
     assertValidImgProp(slstrPInfo.nadirTpgImg);
     assertValidImgProp(slstrPInfo.obliqTpgImg);
-    
+    assertValidOrbit();
 }
 
 /**
@@ -238,6 +248,52 @@ void S3MetaData::readSlstrProdInfo(TiXmlElement* slstrInfo){
 }
 
 /**
+ * read orbit reference information from sentinel 3 safe manifest
+ * @param orbitRefInfo
+ */
+void S3MetaData::readOrbitRefInfo(TiXmlElement* orbitRefInfo){
+    TiXmlNode* node;
+    std::string s;
+    for (node = orbitRefInfo->FirstChild(); node; node = node->NextSibling()){
+        s = "";
+        if ( strcmp( node->Value(), "sentinel-safe:orbitNumber" ) == 0 ){
+            s = node->FirstChild()->ToText()->ValueStr();
+            if (!s.empty()) {
+                orbitNumberAbs = StringToNumber<int>(s);
+            }
+        }
+        if ( strcmp( node->Value(), "sentinel-safe:relativeOrbitNumber" ) == 0 ){
+            s = node->FirstChild()->ToText()->ValueStr();
+            if (!s.empty()) {
+                orbitNumberRel = StringToNumber<int>(s);
+            }
+        }
+    }
+}
+
+/**
+ * read orbit reference information from sentinel 3 safe manifest
+ * @param orbitRefInfo
+ */
+void S3MetaData::readProcessingInfo(TiXmlElement* processingInfo){
+    TiXmlNode* node;
+    TiXmlElement* subElem;
+    std::string s;
+    
+    for (node = processingInfo->FirstChild("sentinel-safe:resource"); node; node = node->NextSibling("sentinel-safe:resource")){
+        if ( strcmp(node->ToElement()->Attribute("role"), "L1 Product") == 0) {
+            break;
+        }
+    }
+    subElem = node->FirstChildElement("sentinel-safe:processing")->FirstChildElement("sentinel-safe:facility")->FirstChildElement("sentinel-safe:software");
+    std::string l1SwName = subElem->Attribute("name");
+    std::string l1SwVersion = subElem->Attribute("version");
+    std::stringstream ss;
+    ss << l1SwName << " v" << l1SwVersion;
+    lv1Info = ss.str();
+}
+
+/**
  * read slstr image information from sentinel 3 safe manifest
  * @param node
  * @param imgInfo
@@ -271,7 +327,25 @@ void S3MetaData::assertValidImgProp(const ImageProperties& imgProp){
             || (imgProp.xOff  < 0) /*|| (imgProp.yOff   < 0)*/ ){
 
         std::string msg(typeid(*this).name());
-        msg.append(": Image properties could not be read from manifest!\n");
+        msg.append(" : Image properties could not be read from manifest!\n");
+        throw std::domain_error(msg);
+    }
+}
+
+/**
+ * verify that the image properties (width, height, etc.)
+ * are positive non zero values
+ * @param imgProp
+ */
+void S3MetaData::assertValidOrbit(){
+    if ( orbitNumberAbs <= 0 ){
+        std::string msg(typeid(*this).name());
+        msg.append(" : absolute orbit number could not be read from manifest!\n");
+        throw std::domain_error(msg);
+    }
+    if ( orbitNumberRel < 0 ){
+        std::string msg(typeid(*this).name());
+        msg.append(" : relative orbit number could not be read from manifest!\n");
         throw std::domain_error(msg);
     }
 }

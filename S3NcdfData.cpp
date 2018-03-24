@@ -14,10 +14,11 @@
 #include <limits>
 #include <cmath>
 #include <netcdf>
+#include <vector>
+#include "S3NcdfData.hpp"
 #include "Images.hpp"
 #include "Interpolation.hpp"
 #include "miscUtils.hpp"
-#include "S3NcdfData.hpp"
 
 using std::cout;
 using std::cerr;
@@ -56,11 +57,21 @@ using namespace netCDF;
 
     const std::string S3NcdfData::AOD_NAMES[N_SLSTR_BANDS] = {"AOD_0550", "AOD_0659", "AOD_0865", "AOD_1610", "AOD_2250"};
     const std::string S3NcdfData::AER_FRAC_NAMES[N_AER_FRAC] = {"fot_clim", "fineOfTotal", "weakAbsOfFine", "dustOfCoarse"};
-    const std::string S3NcdfData::FMIN_NAME = "fmin";
-    const std::string S3NcdfData::UNC_NAME = "AOD_0550_uncertainty";
+    const std::string S3NcdfData::FMIN_NAME     = "fmin";
+    const std::string S3NcdfData::SSA_NAME      = "SSA550";
+    const std::string S3NcdfData::ABS_AOD_NAME  = "AAOD550";
+    const std::string S3NcdfData::D_AOD_NAME    = "D_AOD550";
+    const std::string S3NcdfData::FM_AOD_NAME   = "FM_AOD550";
+    const std::string S3NcdfData::ANGSTROM_NAME = "ANG550_870";
+    const std::string S3NcdfData::UNC_NAME[N_SLSTR_BANDS] = {"AOD_0550_uncertainty", "AOD_0659_uncertainty", "AOD_0865_uncertainty", "AOD_1610_uncertainty", "AOD_2250_uncertainty"};
     const std::string S3NcdfData::RAZ_NAME[N_SLSTR_VIEWS] = {"rel_azimuth_an", "rel_azimuth_ao"};
 
-    
+    const std::string S3NcdfData::LAT_CNR_NAMES[4] = {"pixel_corner_latitude1", "pixel_corner_latitude2", "pixel_corner_latitude3", "pixel_corner_latitude4"};
+    const std::string S3NcdfData::LON_CNR_NAMES[4] = {"pixel_corner_longitude1", "pixel_corner_longitude2", "pixel_corner_longitude3", "pixel_corner_longitude4"};
+
+    const std::string S3NcdfData::TIME_NAME = "time";
+
+    const float S3NcdfData::angWvlLog = -1.0 / log( 550. / 865.);
 //
 //public
 //
@@ -85,6 +96,8 @@ S3NcdfData::~S3NcdfData() {
 void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
     float wvl[] = {555., 659., 865., 1610., 2250.};
     offCorr[0] = offCorr[1] = 0;
+    sceneOutputWidth = outImgProp.width;
+    sceneOutputHeight = outImgProp.height;
     readIrrad(s3Irrad);
     createLandMask();
     createNanMask();
@@ -110,7 +123,7 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
     NcdfImageType imgType;
     std::string ncdfName;
     for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
-        imgType = (iView == 0) ? Nadir0500 : Obliq0500;
+        imgType = (iView == NADIR_VIEW) ? Nadir0500 : Obliq0500;
 
         //read img and bin to output image properties
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
@@ -145,14 +158,30 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
         s3LatImgs[iView] = S3BasicImage<double>(outImgProp);
         s3LatImgs[iView].setValidLimits(-90., 90.);
         s3LatImgs[iView].setFillVal(-999.);
+        if (iView == NADIR_VIEW){
+            for (int iCnr = 0; iCnr < 4; iCnr++) {
+                s3LatCnrImgs[iCnr] = S3BasicImage<double>(outImgProp);
+                s3LatCnrImgs[iCnr].setValidLimits(-90., 90.);
+                s3LatCnrImgs[iCnr].setFillVal(-999.);
+                s3LatCnrImgs[iCnr].name = LAT_CNR_NAMES[iCnr];
+            }
+        }
         readImgBinned(&s3LatImgs[iView], ncdfName, S3MetaData::LAT_NAME[iView], imgType);
 
         s3LonImgs[iView] = S3BasicImage<double>(outImgProp);
         s3LonImgs[iView].setValidLimits(-180., 180.);
-        s3LatImgs[iView].setFillVal(-999.);
+        s3LonImgs[iView].setFillVal(-999.);
+        if (iView == NADIR_VIEW){
+            for (int iCnr = 0; iCnr < 4; iCnr++) {
+                s3LonCnrImgs[iCnr] = S3BasicImage<double>(outImgProp);
+                s3LonCnrImgs[iCnr].setValidLimits(-180., 180.);
+                s3LonCnrImgs[iCnr].setFillVal(-999.);
+                s3LonCnrImgs[iCnr].name = LON_CNR_NAMES[iCnr];
+            }
+        }
         readImgBinned(&s3LonImgs[iView], ncdfName, S3MetaData::LON_NAME[iView], imgType);
 
-        imgType = (iView == 0) ? NadirTpg : ObliqTpg;
+        imgType = (iView == NADIR_VIEW) ? NadirTpg : ObliqTpg;
         
         ncdfName = pars.slstrProductDir + "/" + S3MetaData::GEOMETRY_NAME[iView] + ".nc";
         s3SzaImgs[iView] = S3BasicImage<double>(outImgProp);
@@ -176,6 +205,14 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
     s3PresImg = S3BasicImage<float>(outImgProp);
     s3PresImg.setValidLimits(0., 1100.);
     readImgBinned(&s3PresImg, ncdfName, S3MetaData::PRES_NAME, imgType);
+    
+    ncdfName = pars.slstrProductDir + "/" + S3MetaData::TIME_NAME[0] + ".nc";
+    s3TimeImg = S3BasicImage<unsigned int>(outImgProp);
+    s3TimeImg.name = TIME_NAME;
+    s3TimeImg.setFillVal((unsigned int)(0));
+    s3TimeImg.initImgArray((unsigned int)(0));
+    computeAvgTimeImg(&s3TimeImg);
+
 }
 
 /**
@@ -345,7 +382,14 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
         s3AodImgs[iBand] = S3BasicImage<float>(outImgProp);
         s3AodImgs[iBand].name = AOD_NAMES[iBand];
         s3AodImgs[iBand].setFillVal((float)(-1));
+        s3AodImgs[iBand].setValidLimits((float)(0.003), (float)(4));
         s3AodImgs[iBand].initImgArray((float)(-1));
+
+        s3UncImgs[iBand] = S3BasicImage<float>(outImgProp);
+        s3UncImgs[iBand].name = UNC_NAME[iBand];
+        s3UncImgs[iBand].setFillVal((float)(-1));
+        s3UncImgs[iBand].initImgArray((float)(-1));
+
         for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
             s3SdrImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
             s3SdrImgs[iView][iBand].name = SDR_NAMES[iView][iBand];
@@ -397,10 +441,32 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
     s3FminImg.name = FMIN_NAME;
     s3FminImg.setFillVal((float)(-1));
     s3FminImg.initImgArray((float)(-1));
-    s3UncImg = S3BasicImage<float>(outImgProp);
-    s3UncImg.name = UNC_NAME;
-    s3UncImg.setFillVal((float)(-1));
-    s3UncImg.initImgArray((float)(-1));
+    
+    s3SsaImg = S3BasicImage<float>(outImgProp);
+    s3SsaImg.name = SSA_NAME;
+    s3SsaImg.setFillVal((float)(-1));
+    s3SsaImg.initImgArray((float)(-1));
+    
+    s3AbsAodImg = S3BasicImage<float>(outImgProp);
+    s3AbsAodImg.name = ABS_AOD_NAME;
+    s3AbsAodImg.setFillVal((float)(-1));
+    s3AbsAodImg.initImgArray((float)(-1));
+    
+    s3DustAodImg = S3BasicImage<float>(outImgProp);
+    s3DustAodImg.name = D_AOD_NAME;
+    s3DustAodImg.setFillVal((float)(-1));
+    s3DustAodImg.initImgArray((float)(-1));
+    
+    s3FmAodImg = S3BasicImage<float>(outImgProp);
+    s3FmAodImg.name = FM_AOD_NAME;
+    s3FmAodImg.setFillVal((float)(-1));
+    s3FmAodImg.initImgArray((float)(-1));
+    
+    s3AngstromImg = S3BasicImage<float>(outImgProp);
+    s3AngstromImg.name = ANGSTROM_NAME;
+    s3AngstromImg.setFillVal((float)(-1));
+    s3AngstromImg.initImgArray((float)(-1));
+    
 }
 
 /**
@@ -477,7 +543,8 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
     setBit(&pix.qflag, AOD_HIGH, (pix.aod > 3.003));
     if (pix.aod > 0.003 /*&& pix.aod < 3.003*/){
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
-            s3AodImgs[iBand].img[idx] = pix.aod;
+            s3AodImgs[iBand].img[idx] = pix.aod * pix.spec_aod_fac[iBand];
+            s3UncImgs[iBand].img[idx] = pix.ediff * pix.spec_aod_fac[iBand];
             for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
                 if (pix.view_clear[iView]){
                     s3SdrImgs[iView][iBand].img[idx] = (short)((pix.RR[iBand][iView] - s3SdrImgs[iView][iBand].valOffset) / s3SdrImgs[iView][iBand].valScale);
@@ -493,13 +560,76 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
             }
         }
         s3AerFracImgs[0].img[idx] = pix.lutpars.climFineMode;
-        s3AerFracImgs[1].img[idx] = pix.lutpars.mix_frac[0];
-        s3AerFracImgs[2].img[idx] = pix.lutpars.mix_frac[1];
-        s3AerFracImgs[3].img[idx] = pix.lutpars.mix_frac[2];
+        s3AerFracImgs[1].img[idx] = pix.lutpars.mix_frac[0]; // fine mode
+        s3AerFracImgs[2].img[idx] = pix.lutpars.mix_frac[1]; // weak of fine
+        s3AerFracImgs[3].img[idx] = pix.lutpars.mix_frac[2]; // dust of coarse
         s3FminImg.img[idx] = pix.fmin;
-        s3UncImg.img[idx] = pow(pix.lutpars.mix_frac[0] - pix.lutpars.climFineMode, 2); //pix.ediff;
+        
+        s3SsaImg.img[idx] = pix.ssa[0];
+        s3AbsAodImg.img[idx]  = (pix.ssa > 0) ? (1 - pix.ssa[0]) * pix.aod : 0;
+        s3DustAodImg.img[idx] = pix.lutpars.mix_frac[2] * (1 - pix.lutpars.mix_frac[0]) * pix.aod;
+        s3FmAodImg.img[idx]   = pix.lutpars.mix_frac[0] * pix.aod;
+        s3AngstromImg.img[idx] = log(1. / pix.spec_aod_fac[2]) * angWvlLog;
     }
 }
+
+void S3NcdfData::computeGeoExtent() {
+    int cnrIdx[4] = { 0,
+                      (s3LatCnrImgs[0].imgP.height - 1) * s3LatCnrImgs[0].imgP.width,
+                      s3LatCnrImgs[0].imgP.height * s3LatCnrImgs[0].imgP.width - 1,
+                      s3LatCnrImgs[0].imgP.width - 1
+    };
+
+    geoLimits[0] = 999;
+    geoLimits[1] = -999;
+    geoLimits[2] = 999;
+    geoLimits[3] = -999;
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (geoLimits[0] > s3LatCnrImgs[i].img[cnrIdx[j]]) {
+                geoLimits[0] = s3LatCnrImgs[i].img[cnrIdx[j]];
+            }
+            if (geoLimits[1] < s3LatCnrImgs[i].img[cnrIdx[j]]) {
+                geoLimits[1] = s3LatCnrImgs[i].img[cnrIdx[j]];
+            }
+            if (geoLimits[2] > s3LonCnrImgs[i].img[cnrIdx[j]]) {
+                geoLimits[2] = s3LonCnrImgs[i].img[cnrIdx[j]];
+            }
+            if (geoLimits[3] < s3LonCnrImgs[i].img[cnrIdx[j]]) {
+                geoLimits[3] = s3LonCnrImgs[i].img[cnrIdx[j]];
+            }
+        }
+    }
+}
+
+double S3NcdfData::getLatMin() {
+    if (!isGeoLimitsAvailable) {
+        computeGeoExtent();
+    }
+    return geoLimits[0];
+}
+
+double S3NcdfData::getLatMax() {
+    if (!isGeoLimitsAvailable) {
+        computeGeoExtent();
+    }
+    return geoLimits[1];
+}
+
+double S3NcdfData::getLonMin() {
+    if (!isGeoLimitsAvailable) {
+        computeGeoExtent();
+    }
+    return geoLimits[2];
+}
+
+double S3NcdfData::getLonMax() {
+    if (!isGeoLimitsAvailable) {
+        computeGeoExtent();
+    }
+    return geoLimits[3];
+}
+
 
 //
 // private
@@ -514,7 +644,7 @@ void S3NcdfData::readImgBinned(S3BasicImage<short>* s3Img, const std::string& nc
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
 
     // get add_offset, scale_factor and _FillValue attriubutes 
@@ -541,7 +671,7 @@ void S3NcdfData::readImgBinned(S3BasicImage<unsigned short>* s3Img, const std::s
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
 
     // flag image has no attributes, so we dont get them here ;)
@@ -569,7 +699,7 @@ void S3NcdfData::readRadImg(S3BasicImage<short>* s3Img, const std::string& ncdfN
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
 
     // get add_offset, scale_factor and _FillValue attriubutes 
@@ -593,7 +723,7 @@ void S3NcdfData::readSCloudS3SU(S3BasicImage<int>* s3Img, const std::string& ncd
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
     imgVar.getVar(s3Img->img);
 }
@@ -608,7 +738,7 @@ void S3NcdfData::readImgBinned(S3BasicImage<float>* s3Img, const std::string& nc
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
 
     // get add_offset, scale_factor and _FillValue attriubutes 
@@ -631,7 +761,7 @@ void S3NcdfData::readImgBinned(S3BasicImage<double>* s3Img, const std::string& n
     
     NcVar imgVar = ncF.getVar(varName);
     if (imgVar.isNull()) {
-        throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
+        //throw exceptions::NcNotVar("var is null", varName.c_str(), 26);
     }
 
     // get add_offset, scale_factor and _FillValue attriubutes 
@@ -651,6 +781,7 @@ void S3NcdfData::readImgBinned(S3BasicImage<double>* s3Img, const std::string& n
         if (varName[varName.size()-1] == 'n'){
             //getBinGeoLocImg(s3Img, pars.s3MD.slstrPInfo.nadirImg0500m, imgVar);
             getCtrGeoLocImg(s3Img, pars.s3MD.slstrPInfo.nadirImg0500m, imgVar);
+            getCnrGeoLocImg(pars.s3MD.slstrPInfo.nadirImg0500m, imgVar);
         }
         else if (varName[varName.size()-1] == 'o'){
             //getBinGeoLocImg(s3Img, pars.s3MD.slstrPInfo.obliqImg0500m, imgVar);
@@ -1046,6 +1177,58 @@ void S3NcdfData::getCtrGeoLocImg(S3BasicImage<double>* s3Img, const ImagePropert
 }
 
 /**
+ * get geo-location image for corner pixels of bin only for NADIR
+ * @param imgProp
+ * @param imgVar
+ */
+void S3NcdfData::getCnrGeoLocImg(const ImageProperties& imgProp, const NcVar& imgVar){
+    //determine if imgVar is lat(1) or lon(2) image
+    S3BasicImage<double>* s3CnrImgs;
+    char latLonId = 0;
+    if (imgVar.getName() == pars.s3MD.LAT_NAME[0]) {
+        latLonId = 1;
+        s3CnrImgs = s3LatCnrImgs;
+    } 
+    else if (imgVar.getName() == pars.s3MD.LON_NAME[0]) {
+        latLonId = 2;
+        s3CnrImgs = s3LonCnrImgs;
+    }
+    if (latLonId == 0) return;
+    
+    S3BasicImage<double> tmp(imgProp);
+    imgVar.getVar(tmp.img);
+    getVarAttSafely(&tmp, imgVar);
+
+    const ImageProperties& origNadirProp = pars.s3MD.slstrPInfo.nadirImg0500m;
+    const int dx = origNadirProp.xOff - ( imgProp.xOff - offCorr[0] );
+    const int dy = origNadirProp.yOff - ( imgProp.yOff - offCorr[1] );
+
+    const int& winSize = s3CnrImgs[0].imgP.binSize;
+    double crnrVal;
+    int idx, iCrnr, jCrnr;
+    int iCnrOff[4] = {0, 0, winSize-1, winSize-1};
+    int jCnrOff[4] = {0, winSize-1, winSize-1, 0};
+    // i/j 1 : iterate in binned output img
+    for (int j1 = 0; j1 < s3CnrImgs[0].imgP.height; j1++){
+        for (int i1 = 0; i1 < s3CnrImgs[0].imgP.width; i1++){
+            for (int k = 0; k < 4; k++) {
+                // idx of NW corner pixel
+                iCrnr = i1 * winSize + iCnrOff[k] + dx;
+                jCrnr = j1 * winSize + jCnrOff[k] + dy;
+                idx = jCrnr * tmp.imgP.width + iCrnr;
+                if (tmp.isValidValue(tmp.img[idx])){
+                    crnrVal = tmp.img[idx] * tmp.valScale + tmp.valOffset;
+                    s3CnrImgs[k].img[j1 * s3CnrImgs[k].imgP.width + i1] = crnrVal;
+                }
+                else {
+                    s3CnrImgs[k].img[j1 * s3CnrImgs[k].imgP.width + i1] = s3CnrImgs[k].noData;
+                }
+            }
+        }
+    }
+}
+
+/**
  * get geometry image by reading values for centre of bin pixel
  * (obsolete code for binning still included but not used)
  * @param s3Img
@@ -1360,7 +1543,7 @@ void S3NcdfData::readIrrad(double irrad[][N_SLSTR_BANDS]){
                 irrad[iView][iBand] += irval[i];
             }
             irrad[iView][iBand] /= N_DETECTORS;
-            ncF.close();
+            //ncF.close();
         }
     }   
 }
@@ -1579,3 +1762,40 @@ void S3NcdfData::corrTpg(S3BasicImage<double>& tpg){
         }
     }
 }
+
+/**
+ * 
+ * @param timeImg
+ */
+void S3NcdfData::computeAvgTimeImg(S3BasicImage<unsigned int>* timeImg) {
+    double startSec = parseTimeToSec1970(pars.s3MD.startTime);
+    double stopSec = parseTimeToSec1970(pars.s3MD.stopTime);
+    double t;
+    int width500 = pars.s3MD.slstrPInfo.nadirImg0500m.width;
+    int height500 = pars.s3MD.slstrPInfo.nadirImg0500m.height;
+
+    int nTime = width500 * height500;
+   
+    const ImageProperties& origNadirProp = pars.s3MD.slstrPInfo.nadirImg0500m;
+    const ImageProperties& imgProp = pars.s3MD.slstrPInfo.nadirImg0500m;
+    const int dx = origNadirProp.xOff - ( imgProp.xOff - offCorr[0] );
+    const int dy = origNadirProp.yOff - ( imgProp.yOff - offCorr[1] );
+
+    const int& winSize = timeImg->imgP.binSize;
+    const int& xOff = pars.offset;
+    const int& yOff = pars.offset;
+
+    int idx, iCntr, jCntr;
+    // i/j 1 : iterate in binned output img
+    for (int j1 = 0; j1 < timeImg->imgP.height; j1++){
+        for (int i1 = 0; i1 < timeImg->imgP.width; i1++){
+            // idx of center pixel
+            iCntr = i1 * winSize + xOff + dx;
+            jCntr = j1 * winSize + yOff + dy;
+            idx = jCntr * width500 + iCntr;
+            t = startSec + (stopSec - startSec) * idx / nTime;
+            timeImg->img[j1 * timeImg->imgP.width + i1] = (unsigned int)(t);
+        }
+    }
+}
+

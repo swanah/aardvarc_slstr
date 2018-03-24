@@ -38,7 +38,7 @@ AtmosphericLut::AtmosphericLut(const std::string& lutName) {
     readLutVar(&ncF, "D", &difFrac, &nDifFrac);
     readLutVar(&ncF, "spec_aod_ratio", &specAodRatio, &nSpecAodRatio);
     readLutVar(&ncF, "ssa", &ssa, &nSsa);    
-    ncF.close();
+    //ncF.close();
     initIndexMap();
 }
 

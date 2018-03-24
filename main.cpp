@@ -33,8 +33,10 @@ using namespace netCDF;
 
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<signed char>& img);
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<short>& img);
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<unsigned int>& img);
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<float>& img);
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<double>& img);
+void writeGlobalAttributes(netCDF::NcFile& ncFile, S3NcdfData& s3Data, const int& nPix);
 void computeOutputImageProp(ImageProperties* outputImgProp, const ImageProperties& inputImgProp, const int& winSize);
 bool isPixelValidOcean(SlstrPixel *pixel, const InputParameter& pars);
 float calcPrevFF(S3BasicImage<float> *fineTotalFrac, int x, int y);
@@ -87,6 +89,7 @@ int main(int argc, char** argv) {
 
         SlstrPixel slstrPixel;
         int idx;
+        nPix=0;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
 //        for (slstrPixel.x = 127; slstrPixel.x < 128; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
@@ -164,7 +167,7 @@ int main(int argc, char** argv) {
                         if ((s3Data.flags.img[idx] & 15) == 3){
                             //clear land in both views
                             retrieval.retrieveAodSizeBrent(false);
-                            //retrieval.invertFixedAtm(false, 0.15, 0.9, 0.9, 0.86);
+                            //retrieval.invertFixedAtm(false, 0.15/*slstrPixel.lutpars.climAod*/, 0.9, 0.9, 0.86);
                             s3Data.setRetrievalResults(idx, slstrPixel);
                             nPix++;
                         }
@@ -203,20 +206,36 @@ int main(int argc, char** argv) {
             std::vector<NcDim> dimVec;
             dimVec.push_back(yDim);
             dimVec.push_back(xDim);
+            
+            writeGlobalAttributes(ncOut, s3Data, nPix);
 
+            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
+            }
+            for (int i = 0; i < N_AER_FRAC; i++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3AerFracImgs[i]);
+            }
+            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3UncImgs[iBand]);
+            }
+            addWriteVar(&ncOut, dimVec, s3Data.s3FmAodImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3DustAodImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3AbsAodImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3AngstromImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3SsaImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
             for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
                 for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
                     //addWriteVar(&ncOut, dimVec, s3Data.s3RadImgs[iView][iBand]);
                     addWriteVar(&ncOut, dimVec, s3Data.s3RadImgsF[iView][iBand]);
                     addWriteVar(&ncOut, dimVec, s3Data.s3SdrImgs[iView][iBand]);
-                    /**
-                    addWriteVar(&ncOut, dimVec, s3Data.s3RPathImgs[iView][iBand]);
-                    addWriteVar(&ncOut, dimVec, s3Data.s3TDownImgs[iView][iBand]);
-                    addWriteVar(&ncOut, dimVec, s3Data.s3TUpImgs[iView][iBand]);
-                    addWriteVar(&ncOut, dimVec, s3Data.s3TGasImgs[iView][iBand]);
-                    addWriteVar(&ncOut, dimVec, s3Data.s3SpherAImgs[iView][iBand]);
-                    addWriteVar(&ncOut, dimVec, s3Data.s3DifFracImgs[iView][iBand]);
-                    /**/
+                    
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3RPathImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3TDownImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3TUpImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3TGasImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3SpherAImgs[iView][iBand]);
+                    //addWriteVar(&ncOut, dimVec, s3Data.s3DifFracImgs[iView][iBand]);
                 }
 
                 addWriteVar(&ncOut, dimVec, s3Data.s3SzaImgs[iView]);
@@ -229,19 +248,16 @@ int main(int argc, char** argv) {
             addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[0]);
             s3Data.s3LonImgs[0].name = "longitude";
             addWriteVar(&ncOut, dimVec, s3Data.s3LonImgs[0]);
-            for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
-                addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
+            for (int iCnr = 0; iCnr < 4; iCnr++) {
+                addWriteVar(&ncOut, dimVec, s3Data.s3LatCnrImgs[iCnr]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3LonCnrImgs[iCnr]);
             }
-            for (int i = 0; i < N_AER_FRAC; i++){
-                addWriteVar(&ncOut, dimVec, s3Data.s3AerFracImgs[i]);
-            }
-            addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
-            addWriteVar(&ncOut, dimVec, s3Data.s3UncImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3PresImg);
             addWriteVar(&ncOut, dimVec, s3Data.flags);
             addWriteVar(&ncOut, dimVec, s3Data.s3NPixImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3TimeImg);
 
-            ncOut.close();
+            //ncOut.close();
             t2 = timer();
             printf("Runtime %f seconds\n", (float)(t2 - t1));
         }
@@ -266,13 +282,16 @@ int main(int argc, char** argv) {
         addWriteVar(&ncOut1, dimVec, s3Data.s3NanImg);
         addWriteVar(&ncOut1, dimVec, s3Data.s3ValidImg);
 
-        ncOut1.close();
+        //ncOut1.close();
         /**/
 
+        //S3CciL2Writer cciWriter(s3Data, nPix);
+        //cciWriter.write();
+        
     }
     catch (exceptions::NcException& e){
         cerr << e.what() << endl << "unrecoverable netcdf error" << endl;
-        return e.errorCode();
+        return 1; //e.errorCode();
     }
     /*catch (boost::filesystem::filesystem_error& e){
         cerr << e.what() << endl << "boost FS error" << endl;
@@ -283,7 +302,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     catch (...){
-        cerr << "unknown error" << endl;
+        cerr << "main: exception thrown, but error unknown (maybe in XML parsing...)" << endl;
         return 1;
     }
     cout << "finished!" << endl;
@@ -348,6 +367,32 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
     var.putVar(img.img);
 }
 
+void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<unsigned int>& img){
+    NcVar var = ncOut->addVar(img.name, ncUint, dimVec);
+
+    var.setCompression(true, true, 5);
+
+    if (img.hasOffset){
+        var.putAtt("add_offset", ncDouble, img.valOffset);
+    }
+    if (img.hasScale){
+        var.putAtt("scale_factor", ncDouble, img.valScale);
+    }
+    if (img.hasNoData){
+        var.putAtt("_FillValue", ncUint, img.noData);
+    }
+    if (img.hasMinMax){
+        var.putAtt("valid_min", ncUint, img.validMin);
+        var.putAtt("valid_max", ncUint, img.validMax);
+    }
+    if (img.isSpecBand){
+        var.putAtt("wavelength", ncFloat, img.wvl);
+    }
+    var.putAtt("coordinates", std::string("latitude_an longitude_an"));
+
+    var.putVar(img.img);
+}
+
 void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicImage<float>& img){
     NcVar var = ncOut->addVar(img.name, ncFloat, dimVec);
 
@@ -394,6 +439,58 @@ void addWriteVar(NcFile* ncOut, const std::vector<NcDim>& dimVec, const S3BasicI
         var.putAtt("wavelength", ncFloat, img.wvl);
     }
     var.putVar(img.img);
+}
+
+/**
+ * write global attributes to netcdf aod output
+ * @param ncFile
+ */
+void writeGlobalAttributes(netCDF::NcFile& ncFile, S3NcdfData& s3Data, const int& nPix) {
+    
+    const S3MetaData& s3MD = s3Data.pars.s3MD;
+    //const boost::uuids::uuid uuid = boost::uuids::random_generator()();
+    //const std::string uuidStr = boost::uuids::to_string(uuid);
+    const size_t stmpLen = 1000;
+    char stmp[stmpLen] = "";
+    
+    ncFile.putAtt("Conventions", "CF-1.6");
+    //ncFile.putAtt("tracking_id", uuidStr);
+    ncFile.putAtt("naming_authority", "uk.ac.su.aatsraerosol");
+    ncFile.putAtt("title", "AARDVARC CCI aerosol product level 2");
+    ncFile.putAtt("product_version", "1.0");
+    ncFile.putAtt("summary", "This dataset contains the level-2 aerosol properties products from SLSTR satellite observations. Data are processed by Swansea algorithm");
+    //ncFile.putAtt("id", ncFile.getName(true));
+    ncFile.putAtt("sensor", s3MD.instrument);
+    ncFile.putAtt("platform", s3MD.platformFamily + s3MD.platformNumber);
+    ncFile.putAtt("resolution", "10km x 10km");
+    ncFile.putAtt("projection", "quasi-cartesian instrument grid");
+    ncFile.putAtt("cdm_data_type", "Swath");
+    ncFile.putAtt("cell", "");
+    ncFile.putAtt("abs_orbit", NC_INT, s3MD.orbitNumberAbs);
+    ncFile.putAtt("rel_orbit", NC_INT, s3MD.orbitNumberRel);
+    ncFile.putAtt("inputFileList", s3MD.productName);
+    ncFile.putAtt("time_coverage_start", convS3DateToCci(s3MD.startTime));
+    ncFile.putAtt("time_coverage_end", convS3DateToCci(s3MD.stopTime));
+    snprintf(stmp, stmpLen, "%.6f", s3Data.getLatMin());
+    ncFile.putAtt("geospatial_lat_min", NC_DOUBLE, s3Data.getLatMin());
+    snprintf(stmp, stmpLen, "%.6f", s3Data.getLatMax());
+    ncFile.putAtt("geospatial_lat_max", NC_DOUBLE, s3Data.getLatMax());
+    snprintf(stmp, stmpLen, "%.6f", s3Data.getLonMin());
+    ncFile.putAtt("geospatial_lon_min", NC_DOUBLE, s3Data.getLonMin());
+    snprintf(stmp, stmpLen, "%.6f", s3Data.getLonMax());
+    ncFile.putAtt("geospatial_lon_max", NC_DOUBLE, s3Data.getLonMax());
+    ncFile.putAtt("date_created", getCurrentTimeStr());
+    ncFile.putAtt("project", "Climate Change Initiative - European Space Agency");
+    ncFile.putAtt("references", "http://www.esa-aerosol-cci.org");
+    ncFile.putAtt("creator_name", "College of Science, Swansea University");
+    ncFile.putAtt("creator_url", "http://www.swan.ac.uk/staff/academic/environmentsociety/geography/northpeter/");
+    ncFile.putAtt("creator_email", "p.r.j.north@swansea.ac.uk \n a.heckel@swansea.ac.uk");
+    ncFile.putAtt("source", s3MD.lv1Info);
+    ncFile.putAtt("keywords", "satellite,observation,atmosphere");
+    ncFile.putAtt("keywords_vocabulary", "NASA Global Change Master Directory (GCMD) Science Keywords");
+    ncFile.putAtt("standard_name_vocabulary", "NetCDF Climate and Forecast (CF) Metadata Convention version 18");
+    ncFile.putAtt("license", "ESA CCI Data Policy: free and open access");
+    //ncFile.putAtt("", "");
 }
 
 /**
@@ -481,3 +578,4 @@ float calcPrevFF(S3BasicImage<float> *fineTotalFrac, int x, int y) {
     }
     return 0;
 }
+

@@ -31,10 +31,13 @@ public:
     std::string parFileName;
     std::string slstrProductDir;
     std::string aodOutDir, aodOutName;
+    std::string cciOutDir, cciOutName;
     std::string atmLutFileName;
     std::string ocnLutFileName;
     std::string climFileName;
     
+    bool applyCloudFilter;
+    bool doCciOutput;
     bool useSCloudS3SU;
     std::string sCloudS3SUpath, sCloudS3SUname;
     int winSize; //size of bin window
@@ -56,6 +59,7 @@ private:
     void ensurePathExists(std::string& path);
     void createAodName();
     void createCldName();
+    void createCciAodName();
 };
 
 inline InputParameter::~InputParameter(){}

@@ -22,6 +22,7 @@
 
         std::string s3FileName;
         std::string productName, productType;
+        std::string lv1Info;
 
         std::string startTime, stopTime;
         std::string platformFamily, platformNumber, instrument;
@@ -32,6 +33,8 @@
             ImageProperties nadirTpgImg, obliqTpgImg;
             int ncdfXoff, ncdfYoff;
         } slstrPInfo;
+        
+        int orbitNumberAbs, orbitNumberRel;
         
         static const std::string XFDU_MANIFEST_NAME;
         static const std::string CHANNEL_RAD_NAME[][5];
@@ -56,6 +59,7 @@
         static const std::string S3SU_CLOUD_FNAME;
         static const std::string S3SU_CLOUD_VNAME[];
         static const std::string TIME_NAME[];
+        static const std::string TIME_STAMP_NAME;
         
     private:
 
@@ -66,8 +70,11 @@
         void readPlatformInfo(TiXmlElement* pf);
         void readGenProdInfo(TiXmlElement* genPInfo);
         void readSlstrProdInfo(TiXmlElement* slstrInfo);
+        void readOrbitRefInfo(TiXmlElement* orbitRefInfo);
+        void readProcessingInfo(TiXmlElement* processingInfo);
         void readImageInfo(TiXmlNode* node, ImageProperties* imgInfo);
         void assertValidImgProp(const ImageProperties& imgProp);
+        void assertValidOrbit();
 
     };
 

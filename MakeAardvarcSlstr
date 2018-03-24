@@ -3,7 +3,7 @@ SHELL = /bin/sh
 LDFLAGS= -lnetcdf_c++4 -lnetcdf -lm
 INCDIR = -I/cygdrive/P/C++/NR
 CC     = g++
-CFLAGS = -O3 -std=gnu++11
+CFLAGS = -O3
 
 SRC = $(wildcard *.cpp) $(wildcard tinyxml/*.cpp)
 OBJ = $(SRC:.cpp=.o)

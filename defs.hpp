@@ -22,6 +22,8 @@
 
 #define N_SLSTR_BANDS 5
 #define N_SLSTR_VIEWS 2
+#define NADIR_VIEW 0
+#define OBLIQ_VIEW 1
 #define N_DETECTORS 4
 
 #define N_AER_FRAC 4
@@ -191,6 +193,7 @@ struct SlstrPixel{
     int x, y;                                     // x/y coord of pixel in image
     float ax, cx;                                 // brent brackets
     float prevFineFrac;                           // previously retrieved fine mode fraction
+    long time;
 };
 
 

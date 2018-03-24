@@ -53,7 +53,7 @@ AeroClimatology::AeroClimatology(const std::string& climName, const int& month) 
     dustOfCoarse = new float[nx * ny];
     v.getVar(start, count, dustOfCoarse);
     
-    ncF.close();
+    //ncF.close();
 }
 
 AeroClimatology::~AeroClimatology() {

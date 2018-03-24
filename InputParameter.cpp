@@ -39,18 +39,12 @@ InputParameter::InputParameter(int argc, char** argv) {
     }
     s3MD.parseManifest(slstrProductDir);
 
-    //slstrProductDir = "e:/sat/S3A_SLSTR/S3A_SL_1_RBT____20160902T072518_20160902T072818_20160903T162446_0179_008_163_2879_LN2_O_NT_002.SEN3";
-    //slstrProductDir = "e:/sat/S3A_SLSTR/S3A_SL_1_RBT____20160608T092412_20160608T092712_20160608T115216_0179_005_093_2159_SVL_O_NR_001.SEN3";
-    //slstrProductDir = "e:/sat/S3A_SLSTR/20161230/S3A_SL_1_RBT____20161230T105314_20161230T105614_20161230T131740_0180_012_322_2339_SVL_O_NR_002.SEN3";
-    //slstrProductDir = "e:/sat/S3A_SLSTR/testCases/S3A_SL_1_RBT____20170227T003224_20170227T003524_20170329T135202_0180_015_002______LR1_D_NT_001.SEN3";
-    //slstrProductDir = "e:/sat/S3A_SLSTR/testCases/S3A_SL_1_RBT____20170227T102019_20170227T102319_20170329T144316_0179_015_008______LR1_D_NT_001.SEN3";
-    //slstrProductDir = "e:/sat/S3A_SLSTR/testCases/S3A_SL_1_RBT____20170227T140317_20170227T140617_20170329T151133_0179_015_010______LR1_D_NT_001.SEN3";
-    //aodOutDir = "e:/sat/S3A_SLSTR_AOD/%YYYY%/%MM%";
-    //atmLutFileName = "e:/model/mkS3Lut/s3Lut.nc";//"e:/projects/S3MPC/submitted/adf/atmosLut.nc";
-    //ocnLutFileName = "e:/model/oceanLut/ocnLut.nc";//"e:/projects/S3MPC/submitted/adf/ocnLut.nc";
-    //climFileName   = "e:/projects/S3MPC/submitted/adf/aerosolClimatology.nc";
-    //winSize = 9;
     
+    doCciOutput = false;
+    cciOutDir  = std::string("");
+    cciOutName = std::string("");
+    
+    applyCloudFilter = true;
     doGeoSubset = false;
     latLim[0] = latLim[1] = lonLim[0] = lonLim[1] = -999;
     winSize = 0;
@@ -68,10 +62,23 @@ InputParameter::InputParameter(int argc, char** argv) {
         splitLine(line, sVec);
         sVecLen = sVec.size();
         if (sVecLen > 2){
+            
+            // IO parameters
+            
             if (sVec[0] == "AOD_OUT_PATH") {
                 aodOutDir = sVec[2];
                 parsePlaceholders(aodOutDir);
             }
+            if (sVec[0] == "DO_CCI_L2") doCciOutput = (sVec[2] == "TRUE");
+            if (doCciOutput) {
+                if (sVec[0] == "CCI_OUT_PATH") {
+                    cciOutDir = sVec[2];
+                    parsePlaceholders(cciOutDir);
+                }
+            }
+
+            // LUT parameters
+
             if (sVec[0] == "ATMOS_LUT") {
                 atmLutFileName = sVec[2];
                 parsePlaceholders(atmLutFileName);
@@ -84,11 +91,20 @@ InputParameter::InputParameter(int argc, char** argv) {
                 climFileName = sVec[2];
                 parsePlaceholders(climFileName);
             }
+
+            // CLOUD parameters
+            
+            if (sVec[0] == "CLOUD_MASKING") applyCloudFilter = (sVec[2] == "TRUE");
+            if (applyCloudFilter) {
             if (sVec[0] == "CLOUD_FLAGS") useSCloudS3SU = (sVec[2] == "SCLOUDS3SU");
-            if (sVec[0] == "SCLOUDS3SU_PATH") {
-                sCloudS3SUpath = sVec[2];
-                parsePlaceholders(sCloudS3SUpath);
+                if (sVec[0] == "SCLOUDS3SU_PATH") {
+                    sCloudS3SUpath = sVec[2];
+                    parsePlaceholders(sCloudS3SUpath);
+                }
             }
+            
+            // processing parameters
+            
             if (sVec[0] == "WINSIZE") winSize = std::strtod(sVec[2].c_str(), NULL);
             if (sVec[0] == "SZA_LIMIT") szaLimit = std::strtod(sVec[2].c_str(), NULL);
             if (sVec[0] == "BIN_VALID_THRS") binValidThrs = std::strtod(sVec[2].c_str(), NULL);
@@ -109,6 +125,11 @@ InputParameter::InputParameter(int argc, char** argv) {
     
     ensurePathExists(aodOutDir);
     createAodName();
+    if (doCciOutput) {
+        ensurePathExists(cciOutDir);
+        createCciAodName();
+    }
+    
     if (useSCloudS3SU){
         ensurePathExists(sCloudS3SUpath);
         createCldName();
@@ -152,10 +173,18 @@ void InputParameter::parsePlaceholders(std::string& s) {
     std::string yyyy = s3MD.startTime.substr(0, 4);
     std::string mm = s3MD.startTime.substr(5, 2);
     std::string dd = s3MD.startTime.substr(8, 2);
+    
+    char buf[100];
+    snprintf(buf, 100, "%d", s3MD.orbitNumberAbs);
+    std::string absOrbitStr(buf);
+    snprintf(buf, 100, "%d", s3MD.orbitNumberRel);
+    std::string relOrbitStr(buf);
 
     replaceStringInPlace(s, "%YYYY", yyyy);
     replaceStringInPlace(s, "%MM", mm);
     replaceStringInPlace(s, "%DD", dd);
+    replaceStringInPlace(s, "%AORBIT", absOrbitStr);
+    replaceStringInPlace(s, "%RORBIT", relOrbitStr);
 }
 
 void InputParameter::ensurePathExists(std::string& path) {
@@ -186,3 +215,19 @@ void InputParameter::createCldName() {
     sCloudS3SUname.replace(extIdx, extLen, "_cld.nc");
     sCloudS3SUname = sCloudS3SUpath + "/" + sCloudS3SUname;
 }
+
+
+
+void InputParameter::createCciAodName() {
+    //TODO: implement createCciAodName or remove CciOutput entirely
+    std::string msg("creatCciAodName not implemented yet!");
+    throw std::runtime_error(msg);
+    /****
+    aodOutName = s3MD.productName;
+    int extIdx = aodOutName.find_last_of(".");
+    int extLen = aodOutName.length() - extIdx;
+    aodOutName.replace(extIdx, extLen, "_aod.nc");
+    aodOutName = aodOutDir + "/" + aodOutName;
+    ****/
+}
+

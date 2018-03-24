@@ -15,6 +15,8 @@
 #define S3NCDFDATA_HPP
 
 #include <netcdf>
+#include <stdexcept>
+#include <vector>
 #include "defs.hpp"
 #include "S3MetaData.hpp"
 #include "Images.hpp"
@@ -31,6 +33,9 @@ public:
     const float *latLim;
     const float *lonLim;*/
 
+    int sceneOutputWidth;
+    int sceneOutputHeight;
+    
     S3BasicImage<signed char>   s3LandImg;  //L1b nadir resolution image of land mask
     S3BasicImage<signed char>   s3CloudImg; //L1b nadir resolution image of cloud mask
     S3BasicImage<signed char>   s3NanImg;   //L1b nadir resolution image of valid mask
@@ -39,6 +44,8 @@ public:
     S3BasicImage<double> s3RadImgsF[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // TOA reflec images [views][bands]
     S3BasicImage<double> s3LatImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3LonImgs[N_SLSTR_VIEWS];
+    S3BasicImage<double> s3LatCnrImgs[4];
+    S3BasicImage<double> s3LonCnrImgs[4];
     S3BasicImage<double> s3TpgLatImg;
     S3BasicImage<double> s3TpgLonImg;
     S3BasicImage<double> s3SzaImgs[N_SLSTR_VIEWS];
@@ -48,11 +55,18 @@ public:
     S3BasicImage<float>  s3RazImgs[N_SLSTR_VIEWS];
     S3BasicImage<float>  s3PresImg;
     S3BasicImage<short>  flags; // retrieval resolution flag image
+
     S3BasicImage<short>  s3SdrImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // SDR images [views][bands]
     S3BasicImage<float>  s3AodImgs[N_SLSTR_BANDS];                // AOD images [bands]
     S3BasicImage<float>  s3AerFracImgs[N_AER_FRAC];               // fot_clim, fine_of_total, weak_of_fine, dust_of_coarse
     S3BasicImage<float>  s3FminImg;                               // fmin
-    S3BasicImage<float>  s3UncImg;                                // uncer
+    S3BasicImage<float>  s3UncImgs[N_SLSTR_BANDS];                // uncer images [bands]
+    S3BasicImage<float>  s3SsaImg;                                // ssa
+    S3BasicImage<float>  s3AbsAodImg;                             // abs aod
+    S3BasicImage<float>  s3DustAodImg;                            // dust aod
+    S3BasicImage<float>  s3FmAodImg;                              // fine mode aod
+    S3BasicImage<float>  s3AngstromImg;                           // angstroem image 
+    
     S3BasicImage<float>  s3RPathImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // rPath images [views][bands]
     S3BasicImage<float>  s3TDownImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // downw. transm images [views][bands]
     S3BasicImage<float>  s3TUpImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];   // upw. transm images [views][bands]
@@ -60,6 +74,7 @@ public:
     S3BasicImage<float>  s3SpherAImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // spher Albedo images [views][bands]
     S3BasicImage<float>  s3DifFracImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // diffuse Frac images [views][bands]
     S3BasicImage<short>  s3NPixImg;                                  // nPix
+    S3BasicImage<unsigned int> s3TimeImg;                            // time
 
     double s3Irrad[N_SLSTR_VIEWS][N_SLSTR_BANDS];
     
@@ -72,11 +87,22 @@ public:
     static const std::string SPHERA_NAMES[N_SLSTR_VIEWS][5];
     static const std::string DIFFRAC_NAMES[N_SLSTR_VIEWS][5];
 
-    static const std::string AOD_NAMES[5];
-    static const std::string AER_FRAC_NAMES[4];
+    static const std::string AOD_NAMES[N_SLSTR_BANDS];
+    static const std::string AER_FRAC_NAMES[N_AER_FRAC];
     static const std::string FMIN_NAME;
-    static const std::string UNC_NAME;
-    static const std::string RAZ_NAME[2];
+    static const std::string SSA_NAME;
+    static const std::string ABS_AOD_NAME;
+    static const std::string D_AOD_NAME;
+    static const std::string FM_AOD_NAME;
+    static const std::string ANGSTROM_NAME;
+    static const std::string TIME_NAME;
+    static const std::string UNC_NAME[N_SLSTR_BANDS];
+    static const std::string RAZ_NAME[N_SLSTR_VIEWS];
+
+    static const std::string LAT_CNR_NAMES[4];
+    static const std::string LON_CNR_NAMES[4];
+    
+    static const float angWvlLog;
     
     S3NcdfData(const InputParameter& inPar);
     ~S3NcdfData();
@@ -93,11 +119,18 @@ public:
     void getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]);
     void getToaReflecF(const int& idx, float tarr[][N_SLSTR_VIEWS]);
     void setRetrievalResults(const int& idx, SlstrPixel& pix);
+    void computeGeoExtent();
+    double getLatMin();
+    double getLatMax();
+    double getLonMin();
+    double getLonMax();
     
 private:
     int offCorr[2];
     bool isLandMaskAvailable;
     bool isFlagsImgAvailable;
+    bool isGeoLimitsAvailable;
+    double geoLimits[4]; // latmini, latmax, lonmin, lonmax
     enum NcdfImageType {Nadir0500, Obliq0500, NadirTpg, ObliqTpg}; 
     
     S3NcdfData();
@@ -121,6 +154,7 @@ private:
     void getBinRadImgF(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getCtrGeoLocImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
+    void getCnrGeoLocImg(const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinGeomImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinPresImg(S3BasicImage<float>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void split(const std::string& s, char c, std::vector<std::string>& v);
@@ -137,6 +171,7 @@ private:
     void createNanMask();
     void createValidMask();
     void corrTpg(S3BasicImage<double>& tpg);
+    void computeAvgTimeImg(S3BasicImage<unsigned int>* timeImg);
 };
 
 #endif /* S3NCDFDATA_H */
