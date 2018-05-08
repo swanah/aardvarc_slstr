@@ -220,6 +220,7 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
  * using the provided irradiance information in the L1b product
  */
 void S3NcdfData::convRad2Refl(){
+    const float CALIB_CORR[2][5] = {{1, 1, 1, 1.12, 1.2}, {1, 1, 1, 1.15, 1.26}};
     double rad;
     const double deg2rad = M_PI / 180;
     for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
@@ -238,6 +239,7 @@ void S3NcdfData::convRad2Refl(){
                     rad *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * deg2rad));
                     //s3RadImgs[iView][iBand].img[i] = (rad - s3RadImgs[iView][iBand].valOffset) / s3RadImgs[iView][iBand].valScale;
                     s3RadImgsF[iView][iBand].img[i] *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * deg2rad));
+                    s3RadImgsF[iView][iBand].img[i] *= CALIB_CORR[iView][iBand];
                 }
                 else {
                     //s3RadImgs[iView][iBand].img[i] = s3RadImgs[iView][iBand].noData;
