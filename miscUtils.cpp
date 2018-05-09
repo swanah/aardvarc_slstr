@@ -155,6 +155,16 @@ double parseTimeToSec1970(const std::string& s3DateTime){
     return (double)(1e-6 * ms);
 }
 
+bool isIntegerStr(const std::string& s){
+    if (!(isdigit(s[0]) || s[0] == '+' || s[0] == '-')) {
+        return false;
+    }
+    for (int i = 1; i < s.length(); i++) {
+        if (!isdigit(s[i])) return false;
+    }
+    return true;
+}
+
 
 /**
  * get current system time using high res clock and

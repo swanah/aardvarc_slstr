@@ -30,8 +30,9 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}" p:/C++/aardvarc/aardvarc_slstr/slstrTest.par e:/sat/S3A_SLSTR/20170504/S3A_SL_1_RBT____20170504T083109_20170504T083409_20170504T104054_0179_017_178_2340_MAR_O_NR_002.SEN3</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" p:/C++/aardvarc/pars/slstrTest.par e:/sat/S3A_SLSTR/MPC/S3A_SL_1_RBT____20170619T101637_20170619T101937_20170619T122206_0179_019_065_2160_SVL_O_NR_002.SEN3</runcommandpicklistitem>
           <runcommandpicklistitem>"${OUTPUT_PATH}" p:/C++/aardvarc/pars/slstrTestCci1.par e:/sat/S3A_SLSTR/MPC/S3A_SL_1_RBT____20170619T101637_20170619T101937_20170619T122206_0179_019_065_2160_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}" p:/C++/aardvarc/pars/slstrC3Sbug.par e:/sat/S3A_SLSTR/c3sBug/S3A_SL_1_RBT____20170703T090702_20170703T091002_20170703T112139_0179_019_264_1800_SVL_O_NR_002.SEN3</runcommandpicklistitem>
         </runcommandpicklist>
-        <runcommand>"${OUTPUT_PATH}" p:/C++/aardvarc/pars/slstrTestCci1.par e:/sat/S3A_SLSTR/MPC/S3A_SL_1_RBT____20170619T101637_20170619T101937_20170619T122206_0179_019_065_2160_SVL_O_NR_002.SEN3</runcommand>
+        <runcommand>"${OUTPUT_PATH}" p:/C++/aardvarc/pars/slstrC3Sbug.par e:/sat/S3A_SLSTR/c3sBug/S3A_SL_1_RBT____20170703T090702_20170703T091002_20170703T112139_0179_019_264_1800_SVL_O_NR_002.SEN3</runcommand>
         <rundir></rundir>
         <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>

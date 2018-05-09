@@ -123,6 +123,17 @@ void S3MetaData::parseManifest(const std::string& s3ProdDir) {
     assertValidImgProp(slstrPInfo.nadirTpgImg);
     assertValidImgProp(slstrPInfo.obliqTpgImg);
     assertValidOrbit();
+
+    bool yOffError = (slstrPInfo.nadirImg0500m.yOff != slstrPInfo.obliqImg0500m.yOff);
+    yOffError = yOffError || (slstrPInfo.nadirTpgImg.yOff != slstrPInfo.obliqTpgImg.yOff);
+    yOffError = yOffError || (abs(slstrPInfo.nadirTpgImg.yOff * 2 - slstrPInfo.nadirImg0500m.yOff) > 1);
+    
+    if (yOffError) {
+        slstrPInfo.nadirImg0500m.yOff = 0;
+        slstrPInfo.obliqImg0500m.yOff = 0;
+        slstrPInfo.nadirTpgImg.yOff = 0;
+        slstrPInfo.obliqTpgImg.yOff = 0;
+    }
 }
 
 /**
@@ -302,6 +313,7 @@ void S3MetaData::readImageInfo(TiXmlNode* node, ImageProperties* imgInfo){
     std::string s = node->FirstChild("sentinel3:startOffset")
             ->FirstChild()->ToText()->ValueStr();
     imgInfo->yOff = StringToNumber<int>(s);
+    imgInfo->yOff = (isIntegerStr(s)) ? StringToNumber<int>(s) : 0;
     imgInfo->yOff *= -1; // along track offsets should be negative as they are above/before the image
     s = node->FirstChild("sentinel3:trackOffset")
             ->FirstChild()->ToText()->ValueStr();

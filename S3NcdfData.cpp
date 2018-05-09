@@ -1360,6 +1360,7 @@ void S3NcdfData::split(const std::string& s, char c, std::vector<std::string>& v
    }
 }
 
+/**
 void S3NcdfData::readImageProp(S3MetaData* s3md, ImageProperties* imgProp){
     std::string ncdfName = s3md->s3FileName + "/" + S3MetaData::CHANNEL_RAD_NAME[0][0] + ".nc";
     NcFile ncF(ncdfName, NcFile::read);
@@ -1401,6 +1402,8 @@ void S3NcdfData::readImageProp(const NcFile& ncF, ImageProperties* imgProp){
     imgProp->xRes = StringToNumber<int>(resVec[1]);
     imgProp->yRes = StringToNumber<int>(resVec[2]);
 }
+/**/
+
 
 /**
  * get add_offset, scale_factor and _FillValue attriubutes from Variable IF available

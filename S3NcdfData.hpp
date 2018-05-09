@@ -158,8 +158,8 @@ private:
     void getBinGeomImg(S3BasicImage<double>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void getBinPresImg(S3BasicImage<float>* s3Img, const ImageProperties& imgProp, const netCDF::NcVar& imgVar);
     void split(const std::string& s, char c, std::vector<std::string>& v);
-    void readImageProp(S3MetaData* s3md, ImageProperties* imgProp);
-    void readImageProp(const netCDF::NcFile& ncF, ImageProperties* imgProp);
+    //void readImageProp(S3MetaData* s3md, ImageProperties* imgProp);
+    //void readImageProp(const netCDF::NcFile& ncF, ImageProperties* imgProp);
     void getVarAttSafely(S3BasicImage<short>* s3Img, const netCDF::NcVar& imgVar);
     void getVarAttSafely(S3BasicImage<float>* s3Img, const netCDF::NcVar& imgVar);
     void getVarAttSafely(S3BasicImage<double>* s3Img, const netCDF::NcVar& imgVar);
