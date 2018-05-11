@@ -536,7 +536,7 @@ void S3NcdfData::getViewGeom(const int& idx, ViewGeom* vg){
         s3RazImgs[0].img[idx] = vg->razn;
         s3ScatAngImgs[0].img[idx] = calcScatAng(vg->nad_sol_zen, vg->nad_sat_zen, vg->razn);
     }
-    vg->razn = 0;
+    vg->razf = 0;
     s3RazImgs[1].img[idx] = -1;
     s3ScatAngImgs[1].img[idx] = -1;
     
