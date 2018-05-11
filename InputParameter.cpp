@@ -49,6 +49,7 @@ InputParameter::InputParameter(int argc, char** argv) {
     latLim[0] = latLim[1] = lonLim[0] = lonLim[1] = -999;
     winSize = 0;
     szaLimit = 0;
+    applySimpleRecalib = false;
     
     std::ifstream f(parFileName.c_str());
     std::string line;
@@ -109,6 +110,26 @@ InputParameter::InputParameter(int argc, char** argv) {
             if (sVec[0] == "SZA_LIMIT") szaLimit = std::strtod(sVec[2].c_str(), NULL);
             if (sVec[0] == "BIN_VALID_THRS") binValidThrs = std::strtod(sVec[2].c_str(), NULL);
             if (sVec[0] == "DO_GEOSUBSET") doGeoSubset = (sVec[2] == "TRUE");
+            
+            if (sVec[0] == "APPLY_SIMPLE_RECALIB") applySimpleRecalib = (sVec[2] == "TRUE");
+            if (sVec[0] == "SIMPLE_CALIB_FACTORS_NADIR") {
+                if ((sVecLen-2) != N_SLSTR_BANDS) {
+                    cerr << "wrong number of calib factors" << endl;
+                    throw std::runtime_error("wrong number of calib factors");
+                }
+                for (int i=0; i<N_SLSTR_BANDS; i++) {
+                    simpleRecalFactors[0][i] = std::strtod(sVec[2+i].c_str(), NULL);
+                }
+            }
+            if (sVec[0] == "SIMPLE_CALIB_FACTORS_OBLIQ") {
+                if ((sVecLen-2) != N_SLSTR_BANDS) {
+                    cerr << "wrong number of calib factors" << endl;
+                    throw std::runtime_error("wrong number of calib factors");
+                }
+                for (int i=0; i<N_SLSTR_BANDS; i++) {
+                    simpleRecalFactors[1][i] = std::strtod(sVec[2+i].c_str(), NULL);
+                }
+            }
         }
         if (sVecLen > 3){
             if (sVec[0] == "LAT_MIN_MAX") {
@@ -164,6 +185,17 @@ InputParameter::InputParameter(int argc, char** argv) {
         if (lonLim[0] < -180 || lonLim[0] > 180 || lonLim[1] < -180 || lonLim[1] > 180 || lonLim[0] >= lonLim[1]){
             cerr << "lonMinMax: [" << lonLim[0] << ".." << lonLim[1] << "]" << endl;
             throw std::runtime_error("lonLim not in [-180..180] or lonMin >= lonMax");
+        }
+    }
+    
+    if (applySimpleRecalib) {
+        for (int i = 0; i < N_SLSTR_BANDS; i++) {
+            if ((simpleRecalFactors[0][i] < 0 || simpleRecalFactors[0][i] > 3 || std::isnan(simpleRecalFactors[0][i])) 
+                || (simpleRecalFactors[1][i] < 0 || simpleRecalFactors[1][i] > 3 || std::isnan(simpleRecalFactors[1][i])) ) {
+                
+                cerr << "simple calib factors outside reasonable range [0,3]" << endl;
+                throw std::runtime_error("simple calib factors outside reasonable range [0,3]");
+            } 
         }
     }
     

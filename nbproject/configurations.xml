@@ -15,7 +15,6 @@
       <itemPath>InputParameter.hpp</itemPath>
       <itemPath>Interpolation.hpp</itemPath>
       <itemPath>OceanReflLut.hpp</itemPath>
-      <itemPath>S3CciL2Writer.hpp</itemPath>
       <itemPath>S3MetaData.hpp</itemPath>
       <itemPath>S3NcdfData.hpp</itemPath>
       <itemPath>defs.hpp</itemPath>
@@ -39,7 +38,6 @@
       <itemPath>AtmosphericLut.cpp</itemPath>
       <itemPath>InputParameter.cpp</itemPath>
       <itemPath>OceanReflLut.cpp</itemPath>
-      <itemPath>S3CciL2Writer.cpp</itemPath>
       <itemPath>S3MetaData.cpp</itemPath>
       <itemPath>S3NcdfData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
@@ -108,10 +106,6 @@
       <item path="OceanReflLut.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="OceanReflLut.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="S3CciL2Writer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="S3CciL2Writer.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -195,10 +189,6 @@
       <item path="OceanReflLut.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="OceanReflLut.hpp" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="S3CciL2Writer.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="S3CciL2Writer.hpp" ex="false" tool="3" flavor2="0">
       </item>
       <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="0">
       </item>

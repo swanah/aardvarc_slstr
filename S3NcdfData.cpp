@@ -54,6 +54,10 @@ using namespace netCDF;
         {"S1_DifFrac_n", "S2_DifFrac_n", "S3_DifFrac_n", "S5_DifFrac_n", "S6_DifFrac_n"},
         {"S1_DifFrac_o", "S2_DifFrac_o", "S3_DifFrac_o", "S5_DifFrac_o", "S6_DifFrac_o"}
     };
+    
+    const std::string S3NcdfData::MODELP_NAMES[N_MP] = {
+        "w1", "w2", "w3", "w5", "w6", "pn", "po"
+    };
 
     const std::string S3NcdfData::AOD_NAMES[N_SLSTR_BANDS] = {"AOD_0550", "AOD_0659", "AOD_0865", "AOD_1610", "AOD_2250"};
     const std::string S3NcdfData::AER_FRAC_NAMES[N_AER_FRAC] = {"fot_clim", "fineOfTotal", "weakAbsOfFine", "dustOfCoarse"};
@@ -65,6 +69,7 @@ using namespace netCDF;
     const std::string S3NcdfData::ANGSTROM_NAME = "ANG550_870";
     const std::string S3NcdfData::UNC_NAME[N_SLSTR_BANDS] = {"AOD_0550_uncertainty", "AOD_0659_uncertainty", "AOD_0865_uncertainty", "AOD_1610_uncertainty", "AOD_2250_uncertainty"};
     const std::string S3NcdfData::RAZ_NAME[N_SLSTR_VIEWS] = {"rel_azimuth_an", "rel_azimuth_ao"};
+    const std::string S3NcdfData::SCATANG_NAME[N_SLSTR_VIEWS] = {"scat_angle_an", "scat_angle_ao"};
 
     const std::string S3NcdfData::LAT_CNR_NAMES[4] = {"pixel_corner_latitude1", "pixel_corner_latitude2", "pixel_corner_latitude3", "pixel_corner_latitude4"};
     const std::string S3NcdfData::LON_CNR_NAMES[4] = {"pixel_corner_longitude1", "pixel_corner_longitude2", "pixel_corner_longitude3", "pixel_corner_longitude4"};
@@ -128,7 +133,7 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
         //read img and bin to output image properties
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
             s3RadImgsF[iView][iBand] = S3BasicImage<double>(outImgProp);
-            s3RadImgsF[iView][iBand].setValidLimits(0, 10000);
+            //s3RadImgsF[iView][iBand].setValidLimits(0, 10000);
             s3RadImgsF[iView][iBand].setFillVal(-1.);
             s3RadImgsF[iView][iBand].setWvl(wvl[iBand]);
             
@@ -148,10 +153,10 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
             readImgBinned(&s3RadImgsF[iView][iBand], ncdfName, S3MetaData::CHANNEL_RAD_NAME[iView][iBand], imgType);
 
             // read radiances to <short> images
-            s3RadImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
-            s3RadImgs[iView][iBand].setValidLimits(0, 20000);
-            s3RadImgs[iView][iBand].setWvl(wvl[iBand]);
-            readImgBinned(&s3RadImgs[iView][iBand], ncdfName, S3MetaData::CHANNEL_RAD_NAME[iView][iBand], imgType);
+            //s3RadImgs[iView][iBand] = S3BasicImage<short>(outImgProp);
+            //s3RadImgs[iView][iBand].setValidLimits(0, 20000);
+            //s3RadImgs[iView][iBand].setWvl(wvl[iBand]);
+            //readImgBinned(&s3RadImgs[iView][iBand], ncdfName, S3MetaData::CHANNEL_RAD_NAME[iView][iBand], imgType);
         }
 
         ncdfName = pars.slstrProductDir + "/" + S3MetaData::GEODETIC_NAME[iView] + ".nc";
@@ -220,26 +225,26 @@ void S3NcdfData::readNcdf(const ImageProperties& outImgProp) {
  * using the provided irradiance information in the L1b product
  */
 void S3NcdfData::convRad2Refl(){
-    const float CALIB_CORR[2][5] = {{1, 1, 1, 1.12, 1.2}, {1, 1, 1, 1.15, 1.26}};
-    double rad;
-    const double deg2rad = M_PI / 180;
+    //double rad;
     for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
-            double origScale = s3RadImgs[iView][iBand].valScale;
-            double origOffset = s3RadImgs[iView][iBand].valOffset;
-            short  origNoData = s3RadImgs[iView][iBand].noData;
-            s3RadImgs[iView][iBand].valScale = 1e-4;
-            s3RadImgs[iView][iBand].valOffset = 0;
-            s3RadImgs[iView][iBand].noData = -10000;
+            //double origScale = s3RadImgs[iView][iBand].valScale;
+            //double origOffset = s3RadImgs[iView][iBand].valOffset;
+            //short  origNoData = s3RadImgs[iView][iBand].noData;
+            //[iView][iBand].valScale = 1e-4;
+            //s3RadImgs[iView][iBand].valOffset = 0;
+            //s3RadImgs[iView][iBand].noData = -10000;
             //replaceStringInPlace(s3RadImgs[iView][iBand].name, "radiance", "reflec");
             replaceStringInPlace(s3RadImgsF[iView][iBand].name, "radiance", "reflec");
-            for (int i = 0; i < s3RadImgs[iView][iBand].imgP.nPix; i++){
+            for (int i = 0; i < s3RadImgsF[iView][iBand].imgP.nPix; i++){
                 if (s3RadImgsF[iView][iBand].img[i] != s3RadImgsF[iView][iBand].noData){
-                    rad = (double)(s3RadImgs[iView][iBand].img[i]) * origScale + origOffset;
-                    rad *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * deg2rad));
+                    //rad = (double)(s3RadImgs[iView][iBand].img[i]) * origScale + origOffset;
+                    //rad *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * DTOR));
                     //s3RadImgs[iView][iBand].img[i] = (rad - s3RadImgs[iView][iBand].valOffset) / s3RadImgs[iView][iBand].valScale;
-                    s3RadImgsF[iView][iBand].img[i] *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * deg2rad));
-                    s3RadImgsF[iView][iBand].img[i] *= CALIB_CORR[iView][iBand];
+                    s3RadImgsF[iView][iBand].img[i] *= M_PI / (s3Irrad[iView][iBand] * cos(s3SzaImgs[iView].img[i] * DTOR));
+                    if (pars.applySimpleRecalib) {
+                        s3RadImgsF[iView][iBand].img[i] *= pars.simpleRecalFactors[iView][iBand];
+                    }
                 }
                 else {
                     //s3RadImgs[iView][iBand].img[i] = s3RadImgs[iView][iBand].noData;
@@ -372,19 +377,24 @@ void S3NcdfData::verifyInput(){
  * @param outImgProp
  */
 void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
-    s3RazImgs[0] = S3BasicImage<float>(outImgProp);
-    s3RazImgs[0].name = RAZ_NAME[0];
-    s3RazImgs[0].setFillVal((float)(-1));
-    s3RazImgs[0].initImgArray((float)(-1));
-    s3RazImgs[1] = S3BasicImage<float>(outImgProp);
-    s3RazImgs[1].name = RAZ_NAME[1];
-    s3RazImgs[1].setFillVal((float)(-1));
-    s3RazImgs[1].initImgArray((float)(-1));
+    for (int iView = 0; iView < N_SLSTR_VIEWS; iView++) {
+        s3RazImgs[iView] = S3BasicImage<float>(outImgProp);
+        s3RazImgs[iView].name = RAZ_NAME[iView];
+        s3RazImgs[iView].setFillVal((float)(-1));
+        s3RazImgs[iView].setValidLimits((float)(0), (float)(180));
+        s3RazImgs[iView].initImgArray((float)(-1));
+        
+        s3ScatAngImgs[iView] = S3BasicImage<float>(outImgProp);
+        s3ScatAngImgs[iView].name = SCATANG_NAME[iView];
+        s3ScatAngImgs[iView].setFillVal((float)(-1));
+        s3ScatAngImgs[iView].setValidLimits((float)(0), (float)(180));
+        s3ScatAngImgs[iView].initImgArray((float)(-1));
+    }
     for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
         s3AodImgs[iBand] = S3BasicImage<float>(outImgProp);
         s3AodImgs[iBand].name = AOD_NAMES[iBand];
         s3AodImgs[iBand].setFillVal((float)(-1));
-        s3AodImgs[iBand].setValidLimits((float)(0.003), (float)(4));
+        s3AodImgs[iBand].setValidLimits((float)(0.0), (float)(4));
         s3AodImgs[iBand].initImgArray((float)(-1));
 
         s3UncImgs[iBand] = S3BasicImage<float>(outImgProp);
@@ -469,6 +479,12 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
     s3AngstromImg.setFillVal((float)(-1));
     s3AngstromImg.initImgArray((float)(-1));
     
+    for (int i=0; i<N_MP; i++) {
+        s3ModelParImgs[i] = S3BasicImage<float>(outImgProp);
+        s3ModelParImgs[i].name = MODELP_NAMES[i];
+        s3ModelParImgs[i].setFillVal((float)(-1));
+        s3ModelParImgs[i].initImgArray((float)(-1));
+    }
 }
 
 /**
@@ -503,21 +519,41 @@ void S3NcdfData::getGeoPos(const int& idx, GeoPos* gp){
 }
 
 void S3NcdfData::getViewGeom(const int& idx, ViewGeom* vg){
-    vg->nad_sol_zen  = std::isnan(s3SzaImgs[0].img[idx]) ? 0 : s3SzaImgs[0].img[idx];
-    vg->nad_sol_azim = std::isnan(s3SaaImgs[0].img[idx]) ? 0 : s3SaaImgs[0].img[idx];
-    vg->nad_sat_zen  = std::isnan(s3VzaImgs[0].img[idx]) ? 0 : s3VzaImgs[0].img[idx];
-    vg->nad_sat_azim = std::isnan(s3VaaImgs[0].img[idx]) ? 0 : s3VaaImgs[0].img[idx];
-    vg->razn = fabsf(vg->nad_sat_azim - vg->nad_sol_azim);
-    if (vg->razn > 180.0) vg->razn = 360.0 - vg->razn;
-    s3RazImgs[0].img[idx] = vg->razn;
-
-    vg->for_sol_zen  = std::isnan(s3SzaImgs[1].img[idx]) ? 0 : s3SzaImgs[1].img[idx];
-    vg->for_sol_azim = std::isnan(s3SaaImgs[1].img[idx]) ? 0 : s3SaaImgs[1].img[idx];
-    vg->for_sat_zen  = std::isnan(s3VzaImgs[1].img[idx]) ? 0 : s3VzaImgs[1].img[idx];
-    vg->for_sat_azim = std::isnan(s3VaaImgs[1].img[idx]) ? 0 : s3VaaImgs[1].img[idx];
-    vg->razf = fabsf(vg->for_sat_azim - vg->for_sol_azim);
-    if (vg->razf > 180.0) vg->razf = 360.0 - vg->razf;
-    s3RazImgs[1].img[idx] = vg->razf;
+    vg->razn = 0;
+    s3RazImgs[0].img[idx] = -1;
+    s3ScatAngImgs[0].img[idx] = -1;
+    bool isNan = std::isnan(s3SzaImgs[0].img[idx]);
+    isNan = isNan || std::isnan(s3SaaImgs[0].img[idx]);
+    isNan = isNan || std::isnan(s3VzaImgs[0].img[idx]);
+    isNan = isNan || std::isnan(s3VaaImgs[0].img[idx]);
+    if (!isNan) {
+        vg->nad_sol_zen  = s3SzaImgs[0].img[idx];
+        vg->nad_sol_azim = s3SaaImgs[0].img[idx];
+        vg->nad_sat_zen  = s3VzaImgs[0].img[idx];
+        vg->nad_sat_azim = s3VaaImgs[0].img[idx];
+        vg->razn = fabsf(vg->nad_sat_azim - vg->nad_sol_azim);
+        if (vg->razn > 180.0) vg->razn = 360.0 - vg->razn;
+        s3RazImgs[0].img[idx] = vg->razn;
+        s3ScatAngImgs[0].img[idx] = calcScatAng(vg->nad_sol_zen, vg->nad_sat_zen, vg->razn);
+    }
+    vg->razn = 0;
+    s3RazImgs[1].img[idx] = -1;
+    s3ScatAngImgs[1].img[idx] = -1;
+    
+    isNan = std::isnan(s3SzaImgs[1].img[idx]);
+    isNan = isNan || std::isnan(s3SaaImgs[1].img[idx]);
+    isNan = isNan || std::isnan(s3VzaImgs[1].img[idx]);
+    isNan = isNan || std::isnan(s3VaaImgs[1].img[idx]);
+    if (!isNan){
+        vg->for_sol_zen  = s3SzaImgs[1].img[idx];
+        vg->for_sol_azim = s3SaaImgs[1].img[idx];
+        vg->for_sat_zen  = s3VzaImgs[1].img[idx];
+        vg->for_sat_azim = s3VaaImgs[1].img[idx];
+        vg->razf = fabsf(vg->for_sat_azim - vg->for_sol_azim);
+        if (vg->razf > 180.0) vg->razf = 360.0 - vg->razf;
+        s3RazImgs[1].img[idx] = vg->razf;
+        s3ScatAngImgs[1].img[idx] = calcScatAng(vg->for_sol_zen, vg->for_sat_zen, vg->razf);
+    }
 }
 
 void S3NcdfData::getPres(const int& idx, float* pres){
@@ -572,6 +608,10 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
         s3DustAodImg.img[idx] = pix.lutpars.mix_frac[2] * (1 - pix.lutpars.mix_frac[0]) * pix.aod;
         s3FmAodImg.img[idx]   = pix.lutpars.mix_frac[0] * pix.aod;
         s3AngstromImg.img[idx] = log(1. / pix.spec_aod_fac[2]) * angWvlLog;
+        
+        for (int i=0; i<N_MP; i++){
+            s3ModelParImgs[i].img[idx] = pix.model_p[i];
+        }
     }
 }
 
@@ -883,6 +923,7 @@ void S3NcdfData::getBinRadImg(S3BasicImage<short>* s3Img, const ImageProperties&
     char isObliq = (imgProp == pars.s3MD.slstrPInfo.obliqImg0500m) ? 1 : 0;
     char isS1Rad = (s3Img->name.find("S1") != std::string::npos) ? 1 : 0;
     const float binThrs = pars.binValidThrs * s3Img->imgP.binSize * s3Img->imgP.binSize;
+    replaceStringInPlace(s3Img->name, "_a", "_da");
     // if no binning or shifting is required simply return the img
     if (!s3Img->imgP.isBinned && !isObliq && offCorr[0] == 0 && offCorr[1] == 0){
         imgVar.getVar(s3Img->img);
@@ -1016,7 +1057,7 @@ void S3NcdfData::getBinRadImgF(S3BasicImage<double>* s3Img, const ImagePropertie
     
     S3BasicImage<short> tmp(imgProp);
     getVarAttSafely(&tmp, imgVar);
-    replaceStringInPlace(s3Img->name, "_a", "_fa");
+    //replaceStringInPlace(s3Img->name, "_a", "_fa");
     imgVar.getVar(tmp.img);
     
     const ImageProperties& origNadirProp = pars.s3MD.slstrPInfo.nadirImg0500m;
@@ -1761,13 +1802,14 @@ void S3NcdfData::corrTpg(S3BasicImage<double>& tpg){
     int i1,i2;
     for (int iy=0; iy<h; iy++){
         lp = &tpg.img[iy*w];
-        i1=0;   while (i1<(w-1) && ((lp[i1]>lp[i1+1]) || std::isnan(lp[i1]))) i1++;
-        i2=w-1; while (i2>0 && ((lp[i2]<lp[i2-1]) || std::isnan(lp[i2]))) i2--;
+        // initial values of 55 and 75 are based on tpg width 130; Nadir line is somewhere inbetween
+        i1=55;   while (i1<(w-1) && ((lp[i1]>lp[i1+1]) || std::isnan(lp[i1]))) i1++;
+        i2=75; while (i2>0 && ((lp[i2]<lp[i2-1]) || std::isnan(lp[i2]))) i2--;
         if (i1<(w-1) || i2>0){
             for (int i=i1+1; i<i2; i++){
                 y = intAng(lp[i1], lp[i2], (double)(i-i1)/(double)(i2-i1));
                 if (y<0) y+=360;
-                if (abs(y-lp[i])>1) lp[i] = y;
+                /*if (abs(y-lp[i])>1)*/ lp[i] = y;
             }
         }
     }

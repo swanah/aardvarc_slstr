@@ -334,6 +334,7 @@ public:
         if (pix.dumpRR){
             //dumpRR(pixel, p, tau);
         }
+        for (int i=0; i<N_MP; i++) pix.model_p[i] = pVec[i];
         return fmin + fret;
     }
 };

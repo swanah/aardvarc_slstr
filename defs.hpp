@@ -17,14 +17,17 @@
 #include <cstdio>
 
 #ifndef M_PI
-#define M_PI		3.14159265358979323846
+#define M_PI		3.14159265358979323846     // pi
 #endif
+
+#define DTOR        0.01745329251994329576     // equals PI / 180 degrees to radians
 
 #define N_SLSTR_BANDS 5
 #define N_SLSTR_VIEWS 2
 #define NADIR_VIEW 0
 #define OBLIQ_VIEW 1
 #define N_DETECTORS 4
+#define N_MP 7
 
 #define N_AER_FRAC 4
 
@@ -194,6 +197,7 @@ struct SlstrPixel{
     float ax, cx;                                 // brent brackets
     float prevFineFrac;                           // previously retrieved fine mode fraction
     long time;
+    float model_p[N_MP];                             // surface model pars [N_MP]
 };
 
 

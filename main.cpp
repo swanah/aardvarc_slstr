@@ -106,6 +106,7 @@ int main(int argc, char** argv) {
                 slstrPixel.aod = -1;
                 slstrPixel.ax = lut.aodD.min;
                 slstrPixel.cx = lut.aodD.max;
+                for (int i=0; i<N_MP; i++) slstrPixel.model_p[i] = -1;
 
                 if (s3Data.isValidPixel(idx)){
                     s3Data.getGeoPos(idx, &slstrPixel.geo_pos);
@@ -243,6 +244,7 @@ int main(int argc, char** argv) {
                 addWriteVar(&ncOut, dimVec, s3Data.s3VzaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3VaaImgs[iView]);
                 addWriteVar(&ncOut, dimVec, s3Data.s3RazImgs[iView]);
+                addWriteVar(&ncOut, dimVec, s3Data.s3ScatAngImgs[iView]);
             }
             s3Data.s3LatImgs[0].name = "latitude";
             addWriteVar(&ncOut, dimVec, s3Data.s3LatImgs[0]);
@@ -256,6 +258,10 @@ int main(int argc, char** argv) {
             addWriteVar(&ncOut, dimVec, s3Data.flags);
             addWriteVar(&ncOut, dimVec, s3Data.s3NPixImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3TimeImg);
+            
+            for (int i=0; i<N_MP; i++){
+                addWriteVar(&ncOut, dimVec, s3Data.s3ModelParImgs[i]);
+            }
 
             //ncOut.close();
             t2 = timer();

@@ -31,6 +31,8 @@ std::string getCurrentTimeStr();
 std::string convS3DateToCci(const std::string& s3DateTime);
 double parseTimeToSec1970(const std::string& s3DateTime);
 bool isIntegerStr(const std::string& s);
+float calcScatAng(float sza, float vza, float raz);
+
 
 template<typename T>
 T StringToNumber(const std::string& numberAsString)

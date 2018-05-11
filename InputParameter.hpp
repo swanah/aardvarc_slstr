@@ -36,6 +36,9 @@ public:
     std::string ocnLutFileName;
     std::string climFileName;
     
+    bool applySimpleRecalib;
+    float simpleRecalFactors[N_SLSTR_VIEWS][N_SLSTR_BANDS];
+    
     bool applyCloudFilter;
     bool doCciOutput;
     bool useSCloudS3SU;

@@ -53,6 +53,7 @@ public:
     S3BasicImage<double> s3VzaImgs[N_SLSTR_VIEWS];
     S3BasicImage<double> s3VaaImgs[N_SLSTR_VIEWS];
     S3BasicImage<float>  s3RazImgs[N_SLSTR_VIEWS];
+    S3BasicImage<float>  s3ScatAngImgs[N_SLSTR_VIEWS];
     S3BasicImage<float>  s3PresImg;
     S3BasicImage<short>  flags; // retrieval resolution flag image
 
@@ -73,6 +74,9 @@ public:
     S3BasicImage<float>  s3TGasImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS];  // gas transm images [views][bands]
     S3BasicImage<float>  s3SpherAImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // spher Albedo images [views][bands]
     S3BasicImage<float>  s3DifFracImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // diffuse Frac images [views][bands]
+
+    S3BasicImage<float>  s3ModelParImgs[N_MP]; // surface model pars [7]
+
     S3BasicImage<short>  s3NPixImg;                                  // nPix
     S3BasicImage<unsigned int> s3TimeImg;                            // time
 
@@ -87,6 +91,8 @@ public:
     static const std::string SPHERA_NAMES[N_SLSTR_VIEWS][5];
     static const std::string DIFFRAC_NAMES[N_SLSTR_VIEWS][5];
 
+    static const std::string MODELP_NAMES[N_MP];
+
     static const std::string AOD_NAMES[N_SLSTR_BANDS];
     static const std::string AER_FRAC_NAMES[N_AER_FRAC];
     static const std::string FMIN_NAME;
@@ -98,6 +104,7 @@ public:
     static const std::string TIME_NAME;
     static const std::string UNC_NAME[N_SLSTR_BANDS];
     static const std::string RAZ_NAME[N_SLSTR_VIEWS];
+    static const std::string SCATANG_NAME[N_SLSTR_VIEWS];
 
     static const std::string LAT_CNR_NAMES[4];
     static const std::string LON_CNR_NAMES[4];

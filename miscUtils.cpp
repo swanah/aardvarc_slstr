@@ -13,6 +13,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include "miscUtils.hpp"
+#include "defs.hpp"
 
 void replaceStringInPlace(std::string& subject, const std::string& search,
                           const std::string& replace) {
@@ -80,12 +81,11 @@ void setBit(short *flag, short bitvalue, char test) {
  * @return 
  */
 double intAng(double a, double b, double w){
-    double d2r = acos(-1.)/180.;
-    a *= d2r;
-    b *= d2r;
+    a *= DTOR;
+    b *= DTOR;
     double cs = (1-w)*cos(a) + w*cos(b);
     double sn = (1-w)*sin(a) + w*sin(b);
-    return atan2(sn,cs)/d2r;
+    return atan2(sn,cs)/DTOR;
 }
 
 bool fileExists(const std::string& s){
@@ -163,6 +163,30 @@ bool isIntegerStr(const std::string& s){
         if (!isdigit(s[i])) return false;
     }
     return true;
+}
+
+/**
+ * compute scattering angle sca based on 
+ * solar zenith angle sza
+ * view zenith angle vza and
+ * relative azimuth angle raz
+ * according to
+ * 
+ * cos(sca) = cos(sza)cos(vza) - sin(sza)sin(vza)cos(raz)
+ * 
+ * @param sza
+ * @param vza
+ * @param raz
+ * @return sca - scattering angle [0,180] or -1 if failure
+ */
+float calcScatAng(float sza, float vza, float raz) {
+    if (sza < 0 || sza > 90) return -1;
+    if (vza < 0 || vza > 90) return -1;
+    if (raz < 0 || raz > 180) return -1;
+    sza *= DTOR;
+    vza *= DTOR;
+    raz *= DTOR;
+    return (float)(acos( cos(sza)*cos(vza) + sin(sza)*sin(vza)*cos(raz) ) / DTOR);
 }
 
 
