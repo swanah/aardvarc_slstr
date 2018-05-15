@@ -13,13 +13,14 @@ OBJ = $(SRC:.cpp=.o)
 all: aardvarc
 
 aardvarc: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(INCDIR) $(LDFLAGS)
 
+%.o: %.hpp
 %.o: %.cpp
 	$(CC) $(CFLAGS) -o $@ -c $< $(INCDIR)
 
 clean:
-	rm $(wildcard *.o) aardvarc
+	rm $(wildcard *.o)
 
 clean-all:
 	rm $(OBJ) aardvarc

@@ -263,6 +263,8 @@ int main(int argc, char** argv) {
                 addWriteVar(&ncOut, dimVec, s3Data.s3ModelParImgs[i]);
             }
 
+            addWriteVar(&ncOut, dimVec, s3Data.s3AodClimImg);
+
             //ncOut.close();
             t2 = timer();
             printf("Runtime %f seconds\n", (float)(t2 - t1));

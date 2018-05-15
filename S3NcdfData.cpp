@@ -70,6 +70,7 @@ using namespace netCDF;
     const std::string S3NcdfData::UNC_NAME[N_SLSTR_BANDS] = {"AOD_0550_uncertainty", "AOD_0659_uncertainty", "AOD_0865_uncertainty", "AOD_1610_uncertainty", "AOD_2250_uncertainty"};
     const std::string S3NcdfData::RAZ_NAME[N_SLSTR_VIEWS] = {"rel_azimuth_an", "rel_azimuth_ao"};
     const std::string S3NcdfData::SCATANG_NAME[N_SLSTR_VIEWS] = {"scat_angle_an", "scat_angle_ao"};
+    const std::string S3NcdfData::AOD_CLIM_NAME  = "AOD_0550_clim";
 
     const std::string S3NcdfData::LAT_CNR_NAMES[4] = {"pixel_corner_latitude1", "pixel_corner_latitude2", "pixel_corner_latitude3", "pixel_corner_latitude4"};
     const std::string S3NcdfData::LON_CNR_NAMES[4] = {"pixel_corner_longitude1", "pixel_corner_longitude2", "pixel_corner_longitude3", "pixel_corner_longitude4"};
@@ -485,6 +486,12 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
         s3ModelParImgs[i].setFillVal((float)(-1));
         s3ModelParImgs[i].initImgArray((float)(-1));
     }
+
+    s3AodClimImg = S3BasicImage<float>(outImgProp);
+    s3AodClimImg.name = AOD_CLIM_NAME;
+    s3AodClimImg.setFillVal((float)(-1));
+    s3AodClimImg.initImgArray((float)(-1));
+    
 }
 
 /**
@@ -597,6 +604,8 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
                 }
             }
         }
+
+        s3AodClimImg.img[idx]     = pix.lutpars.climAod;
         s3AerFracImgs[0].img[idx] = pix.lutpars.climFineMode;
         s3AerFracImgs[1].img[idx] = pix.lutpars.mix_frac[0]; // fine mode
         s3AerFracImgs[2].img[idx] = pix.lutpars.mix_frac[1]; // weak of fine

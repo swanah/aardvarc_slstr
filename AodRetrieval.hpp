@@ -18,9 +18,9 @@
 #include "defs.hpp"
 #include "AtmosphericLut.hpp"
 #include "OceanReflLut.hpp"
-#include "nr3.h"
-#include "mins.h"
-#include "mins_ndim.h"
+#include <nr3.h>
+#include <mins.h>
+#include <mins_ndim.h>
 
 
 //#define TOL 0.01    // optimisation limit for Brent fits
@@ -294,7 +294,7 @@ public:
     Doub operator() (Doub tau){
 
         int i, j;
-        Doub fret = 0.0, fmin = 0.0, y;
+        Doub fret = 0.0, fmin = 0.0, ftauClim = 0.0, y;
         Doub p[] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.5, 0.3};
         double dRsurf_dToa[N_SLSTR_BANDS * N_SLSTR_VIEWS];
         VecDoub pVec(7, &p[0]);
@@ -335,7 +335,12 @@ public:
             //dumpRR(pixel, p, tau);
         }
         for (int i=0; i<N_MP; i++) pix.model_p[i] = pVec[i];
-        return fmin + fret;
+        
+        // constrain aod through AOD climatology
+        ftauClim = (tau - pix.lutpars.climAod);
+        ftauClim *= ftauClim / 10;
+        
+        return fmin + fret + ftauClim;
     }
 };
 

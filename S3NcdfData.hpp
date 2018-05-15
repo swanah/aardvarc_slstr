@@ -76,6 +76,7 @@ public:
     S3BasicImage<float>  s3DifFracImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // diffuse Frac images [views][bands]
 
     S3BasicImage<float>  s3ModelParImgs[N_MP]; // surface model pars [7]
+    S3BasicImage<float>  s3AodClimImg; // climatology aod
 
     S3BasicImage<short>  s3NPixImg;                                  // nPix
     S3BasicImage<unsigned int> s3TimeImg;                            // time
@@ -105,7 +106,8 @@ public:
     static const std::string UNC_NAME[N_SLSTR_BANDS];
     static const std::string RAZ_NAME[N_SLSTR_VIEWS];
     static const std::string SCATANG_NAME[N_SLSTR_VIEWS];
-
+    static const std::string AOD_CLIM_NAME;
+    
     static const std::string LAT_CNR_NAMES[4];
     static const std::string LON_CNR_NAMES[4];
     
