@@ -340,7 +340,7 @@ public:
         ftauClim = (tau - pix.lutpars.climAod);
         ftauClim *= ftauClim / 10;
         
-        return fmin + fret + ftauClim;
+        return fmin + fret /*+ ftauClim*/;
     }
 };
 
@@ -389,7 +389,109 @@ public:
     }
 };
 
+class EmodTauSize {
+public:
+    SlstrPixel& pix;
+    AtmosphericLut& atmLut;
+    OceanReflLut& ocnLut;
+    
+    double dRsurf_dToa[N_SLSTR_BANDS * N_SLSTR_VIEWS];
+    EmodUncert emodUncert;
+    EmodOcean  emodOcean;
+    
+    bool isOcean;
+    
 
+    EmodTauSize(SlstrPixel& pixel, AtmosphericLut& atm_lut, OceanReflLut& ocn_lut, bool is_ocean) :
+    pix(pixel), atmLut(atm_lut), ocnLut(ocn_lut), isOcean(is_ocean), 
+    emodUncert(pix, atmLut, ocnLut, dRsurf_dToa), emodOcean(pix, atmLut, ocnLut, dRsurf_dToa) {}
+
+    Doub operator()(Doub* p, size_t size) {
+        VecDoub_I pVec(size, p);
+        return (*this)(pVec);
+    }
+    
+    /**
+     * p should provide size(fot) and aod(tau) estimates
+     * function then invertes atmosphere and calls surface optimisation
+     * function returns fmin
+     * @param p
+     * @return 
+     */
+    Doub operator()(VecDoub_I& pTauSize) {
+        Doub tau = pTauSize[0];
+        Doub fot = pTauSize[1];
+        Doub fmin = 0.0, y;
+        Doub pSurfModel[] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.5, 0.3};
+        VecDoub pVecSurf(7, &pSurfModel[0]);
+
+        //penalty for tau or fot outside valid range
+        //the hard physical limit for tau and fot receiveces a tolerance of 0.003 for smoothness
+        //when the hard limit is reached the penalty of 2e6 leads to fmin = 18
+        float lim;
+        lim = atmLut.aodD.min + 0.003; if (tau < lim) fmin = fmin + (lim - tau)*(lim - tau)*2E6; //tau
+        lim = atmLut.aodD.max - 0.003; if (tau > lim) fmin = fmin + (lim - tau)*(lim - tau)*2E6; //tau
+        lim = 0.003;     if (fot < lim) fmin = fmin + (lim - fot)*(lim - fot)*2E6; //fot
+        lim = 1 - 0.003; if (fot > lim) fmin = fmin + (lim - fot)*(lim - fot)*2E6; //fot
+        
+        if (fot < 0) fot = 0;
+        if (fot > 1) fot = 1;
+        pix.lutpars.mixing[0] = ((1 - fot) * pix.lutpars.mix_frac[2])*100; // Dust
+        pix.lutpars.mixing[1] = ((1 - fot) * (1 - pix.lutpars.mix_frac[2]))*100; // Sea Salt
+        pix.lutpars.mixing[2] = (fot * (1 - pix.lutpars.mix_frac[1]))*100; // Strong Abs
+        pix.lutpars.mixing[3] = (fot * pix.lutpars.mix_frac[1])*100; // Weak Abs
+        atmLut.getTetrahedronPoints(&pix.lutpars, false);
+        pix.lutpars.ocn_mi = ocnLut.getInterPar(fot, ocnLut.modelD);
+
+        if (tau < atmLut.aodD.min) tau = atmLut.aodD.min;
+        if (tau > atmLut.aodD.max) tau = atmLut.aodD.max;
+        pix.aod=tau;
+        atmLut.psInv6s(&pix, tau);
+
+        for (int i = 0; i < N_SLSTR_BANDS; i++){
+            for (int j = 0; j < N_SLSTR_VIEWS; j++){
+                // penalty for negative surface reflectance
+                if (pix.RR[i][j] < 0.001) { //maybe only for i>0
+                    fmin = fmin + pow((pix.RR[i][j] - 0.001), 2) * 1000000.0;
+                }
+                y = (pix.tarr[i][j] + dToa - pix.inv_coef[i][j].rPath) / pix.inv_coef[i][j].tGas;
+                y /= (pix.inv_coef[i][j].tDown * pix.inv_coef[i][j].tUp);
+                dRsurf_dToa[i*N_SLSTR_VIEWS + j] = fabs((y / (1.0 + pix.inv_coef[i][j].spherAlb * y)) - pix.RR[i][j]) / dToa;
+            }
+        }
+        setBit(&pix.qflag, EMOD_PENALTY, (fmin > 0));
+
+        if (isOcean) {
+            fmin += emodOcean(pix.ocn_wind_speed);
+        }
+        else if (fmin < 10){
+            Powell<EmodUncert> powell(emodUncert);
+            Int n=pVecSurf.size();
+            MatDoub ximat(n,n,0.0);
+            for (Int i=0;i<n;i++) ximat[i][i]=0.01;
+            pVecSurf = powell.minimize(pVecSurf);
+            fmin += powell.fret;
+        }
+        if (pix.dumpRR){
+            //dumpRR(pixel, p, tau);
+        }
+        for (int i=0; i<N_MP; i++) pix.model_p[i] = pVecSurf[i];
+
+        float penalty1 = (fot - pix.lutpars.climFineMode);
+        penalty1 *= penalty1;
+
+        float penalty2 = 0;
+        if (pix.prevFineFrac > 0) {
+            penalty2 = (fot - pix.prevFineFrac);
+            penalty2 *= penalty2 * 10;
+        }
+
+        if (pix.x == 91 && pix.y == 37){
+            fprintf(stderr, "%f %f %f %f %f %f\n", tau, fot, fmin, penalty1, penalty2, pix.prevFineFrac);
+        }
+        return fmin + penalty1 + penalty2;
+    }
+};
 
 class AodRetrieval {
 public:
@@ -402,6 +504,7 @@ public:
     ~AodRetrieval();
 
     void retrieveAodSizeBrent(bool isOcean);
+    void retrieveAodSizePowell(bool isOcean);
     void invertFixedAtm(bool isOcean, const float& aod, const float& fot, const float& wof, const float& doc);
 
 private:
@@ -410,7 +513,9 @@ private:
     AodRetrieval& operator=(const AodRetrieval& rhs) { throw std::logic_error("AodRetrieval shoudlnt be copied"); } // disable copy assignment
 
     float getCurvature(EmodTau *emodTau, char isOcean);
-/*
+    float getCurvature(EmodTauSize& emodTauSize, char isOcean);
+    
+    /*
     float emod_size(float fot);
     float emod_tau_ocean_model(float tau);
     float emod_tau_uncer(float tau);

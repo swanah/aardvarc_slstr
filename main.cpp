@@ -91,15 +91,15 @@ int main(int argc, char** argv) {
         int idx;
         nPix=0;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
-//        for (slstrPixel.x = 127; slstrPixel.x < 128; slstrPixel.x++){
+//        for (slstrPixel.x = 91; slstrPixel.x < 92; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
             for (slstrPixel.y = 0; slstrPixel.y < imgHeight; slstrPixel.y++){
-//            for (slstrPixel.y = 67; slstrPixel.y < 68; slstrPixel.y++){
+//            for (slstrPixel.y = 37; slstrPixel.y < 38; slstrPixel.y++){
 //                fprintf(stdout, "processing %5d / %5d\n", slstrPixel.x, slstrPixel.y); fflush(stdout);
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
 
                 slstrPixel.qflag = 0;
-                slstrPixel.prevFineFrac = 0;
+                slstrPixel.prevFineFrac = -1;
                 slstrPixel.ndvi = 1;
                 slstrPixel.ndvi_veg_weight = 1;
                 slstrPixel.dust_weight = 0;
@@ -167,14 +167,16 @@ int main(int argc, char** argv) {
                         AodRetrieval retrieval(slstrPixel, lut, ocnLut);
                         if ((s3Data.flags.img[idx] & 15) == 3){
                             //clear land in both views
-                            retrieval.retrieveAodSizeBrent(false);
+                            //retrieval.retrieveAodSizeBrent(false);
+                            retrieval.retrieveAodSizePowell(false);
                             //retrieval.invertFixedAtm(false, 0.15/*slstrPixel.lutpars.climAod*/, 0.9, 0.9, 0.86);
                             s3Data.setRetrievalResults(idx, slstrPixel);
                             nPix++;
                         }
                         else if (isPixelValidOcean(&slstrPixel, pars)) {
                             //clear ocean in either view
-                            retrieval.retrieveAodSizeBrent(true);
+                            //retrieval.retrieveAodSizeBrent(true);
+                            retrieval.retrieveAodSizePowell(true);
                             //retrieval.invertFixedAtm(false, 0.15, 0.9, 0.9, 0.86);
                             s3Data.setRetrievalResults(idx, slstrPixel);
                             nPix++;
@@ -584,6 +586,6 @@ float calcPrevFF(S3BasicImage<float> *fineTotalFrac, int x, int y) {
     if (weight > 1e-4) {
         return (prevFF / weight);
     }
-    return 0;
+    return -1;
 }
 

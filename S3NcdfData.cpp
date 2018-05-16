@@ -604,6 +604,11 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
                 }
             }
         }
+                    
+        if (pix.x==91 && pix.y==37){
+            fprintf(stderr, "RR[0]: %f %f %f %f %f\n", pix.RR[0][0], pix.RR[1][0], pix.RR[2][0], pix.RR[3][0], pix.RR[4][0]);
+            fprintf(stderr, "RR[1]: %f %f %f %f %f\n", pix.RR[0][1], pix.RR[1][1], pix.RR[2][1], pix.RR[3][1], pix.RR[4][1]);
+        }
 
         s3AodClimImg.img[idx]     = pix.lutpars.climAod;
         s3AerFracImgs[0].img[idx] = pix.lutpars.climFineMode;
