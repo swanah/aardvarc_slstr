@@ -77,6 +77,9 @@ private:
     double interpolTgas(const float szai, const float vzai, const float presi, const int iBand, const int iModel);
     double interpolTscat(const float szai, const float presi, const float taui, const int iBand, const int iModel);
     double interpolRpath(const float szai, const float vzai, const float razi, const float presi, const float taui, const int iBand, const int iModel);
+    
+    void correctTrans();
+    
 };
 
 #endif /* ATMOSPHERICLUT_HPP */

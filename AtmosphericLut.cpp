@@ -722,3 +722,28 @@ double AtmosphericLut::interpolRpath(const float szai, const float vzai, const f
 
     return val;
 }
+
+
+void AtmosphericLut::correctTrans() {
+    int idx;
+    int itg00, itgd0, it;
+    float tg00, tgd0;
+    
+    for (int sza=0; sza<szaD.n; sza++){
+        for (int p=0; p<presD.n; p++){
+            for (int tau=0; tau<aodD.n; tau++){
+                for (int band=0; band<wvlD.n; band++){
+                    for (int model=0; model<modelD.n; model++){
+                        itg00 = model + modelD.n * (band + wvlD.n * (p + presD.n * (0 + vzaD.n * (0))));
+                        itgd0 = model + modelD.n * (band + wvlD.n * (p + presD.n * (0 + vzaD.n * (sza))));
+                        it = model + modelD.n * (band + wvlD.n * (tau + aodD.n * (p + presD.n * (sza))));
+                        
+                        tg00 = tGas[itg00];
+                        tgd0 = tGas[itgd0];
+                        t[it] *= sqrt(tg00)/tgd0;
+                    }
+                }
+            }
+        }
+    }
+}

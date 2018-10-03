@@ -88,14 +88,29 @@ int main(int argc, char** argv) {
         printf("Time to read Luts %f seconds\n", (float)(t2 - t1));
 
         SlstrPixel slstrPixel;
+
+        slstrPixel.specWeights[0] = 1.0;
+        slstrPixel.specWeights[1] = 1.0;
+        slstrPixel.specWeights[2] = 0.1;
+        slstrPixel.specWeights[3] = 0.5;
+        slstrPixel.specWeights[4] = 0.0;
+        double sumSpecWeight = 0;
+        for (int i=0; i<N_SLSTR_BANDS; i++){
+            sumSpecWeight += slstrPixel.specWeights[i];
+        }
+        if (sumSpecWeight > 0) {
+            for (int i=0; i<N_SLSTR_BANDS; i++){
+                slstrPixel.specWeights[i] /= sumSpecWeight;
+            }
+        }
+        
         int idx;
         nPix=0;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
-//        for (slstrPixel.x = 127; slstrPixel.x < 128; slstrPixel.x++){
+//        for (slstrPixel.x = 119; slstrPixel.x < 120; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
             for (slstrPixel.y = 0; slstrPixel.y < imgHeight; slstrPixel.y++){
-//            for (slstrPixel.y = 67; slstrPixel.y < 68; slstrPixel.y++){
-//                fprintf(stdout, "processing %5d / %5d\n", slstrPixel.x, slstrPixel.y); fflush(stdout);
+//            for (slstrPixel.y = 79; slstrPixel.y < 80; slstrPixel.y++){
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
 
                 slstrPixel.qflag = 0;
@@ -106,6 +121,8 @@ int main(int argc, char** argv) {
                 slstrPixel.aod = -1;
                 slstrPixel.ax = lut.aodD.min;
                 slstrPixel.cx = lut.aodD.max;
+                slstrPixel.fminAng = -1;
+                slstrPixel.fminSpec = -1;
                 for (int i=0; i<N_MP; i++) slstrPixel.model_p[i] = -1;
 
                 if (s3Data.isValidPixel(idx)){
@@ -200,6 +217,8 @@ int main(int argc, char** argv) {
         printf("Time to retrieve AOD %f seconds\n", (float)(t1 - t2));
 /*******/
         if (nPix>0){
+            s3Data.createFilterAod();
+            
             cout << "writing: " << pars.aodOutName << endl;
             NcFile ncOut(pars.aodOutName, NcFile::replace);
             NcDim xDim = ncOut.addDim("columns", imgWidth);
@@ -210,6 +229,7 @@ int main(int argc, char** argv) {
             
             writeGlobalAttributes(ncOut, s3Data, nPix);
 
+            addWriteVar(&ncOut, dimVec, s3Data.s3AodFltrImg);
             for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++){
                 addWriteVar(&ncOut, dimVec, s3Data.s3AodImgs[iBand]);
             }

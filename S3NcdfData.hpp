@@ -58,6 +58,7 @@ public:
     S3BasicImage<short>  flags; // retrieval resolution flag image
 
     S3BasicImage<short>  s3SdrImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // SDR images [views][bands]
+    S3BasicImage<float>  s3AodFltrImg;                            // post proc filtered AOD image
     S3BasicImage<float>  s3AodImgs[N_SLSTR_BANDS];                // AOD images [bands]
     S3BasicImage<float>  s3AerFracImgs[N_AER_FRAC];               // fot_clim, fine_of_total, weak_of_fine, dust_of_coarse
     S3BasicImage<float>  s3FminImg;                               // fmin
@@ -128,6 +129,7 @@ public:
     void getToaReflec(const int& idx, float tarr[][N_SLSTR_VIEWS]);
     void getToaReflecF(const int& idx, float tarr[][N_SLSTR_VIEWS]);
     void setRetrievalResults(const int& idx, SlstrPixel& pix);
+    void createFilterAod();
     void computeGeoExtent();
     double getLatMin();
     double getLatMax();

@@ -21,6 +21,30 @@
                     <name>Release</name>
                     <type>1</type>
                 </confElem>
+                <confElem>
+                    <name>desert</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Europe</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Thailand</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Australia</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>WSahara</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>SAmerica</name>
+                    <type>1</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>

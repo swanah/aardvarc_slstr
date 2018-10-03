@@ -265,7 +265,7 @@ void S3NcdfData::convRad2Refl(){
 void S3NcdfData::verifyInput(){
     char valid;
     int iBand;
-    
+    //>>>>understand double use of valid;
     for (int i = 0; i < s3RadImgsF[0][0].imgP.nPix; i++){
         valid = (flags.img[i] & 15);
         if (valid == 1 || valid == 2){
@@ -312,7 +312,7 @@ void S3NcdfData::verifyInput(){
             if (!valid){
                 flags.img[i] &= ~(8);
                 for (iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
-                    s3RadImgsF[0][iBand].img[i] = s3RadImgsF[0][iBand].noData;
+                    s3RadImgsF[1][iBand].img[i] = s3RadImgsF[1][iBand].noData;
                 }
             }
         }
@@ -444,6 +444,13 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
             /**/
         }
     }
+
+    s3AodFltrImg = S3BasicImage<float>(outImgProp);
+    s3AodFltrImg.name = AOD_NAMES[0] + "_fltr";
+    s3AodFltrImg.setFillVal((float)(-1));
+    s3AodFltrImg.setValidLimits((float)(0.0), (float)(4));
+    s3AodFltrImg.initImgArray((float)(-1));
+
     for (int i = 0; i < N_AER_FRAC; i++){
         s3AerFracImgs[i] = S3BasicImage<float>(outImgProp);
         s3AerFracImgs[i].name = AER_FRAC_NAMES[i];
@@ -541,7 +548,7 @@ void S3NcdfData::getViewGeom(const int& idx, ViewGeom* vg){
         vg->razn = fabsf(vg->nad_sat_azim - vg->nad_sol_azim);
         if (vg->razn > 180.0) vg->razn = 360.0 - vg->razn;
         s3RazImgs[0].img[idx] = vg->razn;
-        s3ScatAngImgs[0].img[idx] = calcScatAng(vg->nad_sol_zen, vg->nad_sat_zen, vg->razn);
+        s3ScatAngImgs[0].img[idx] = vg->scat_ang_n = calcScatAng(vg->nad_sol_zen, vg->nad_sat_zen, vg->razn);
     }
     vg->razf = 0;
     s3RazImgs[1].img[idx] = -1;
@@ -559,7 +566,7 @@ void S3NcdfData::getViewGeom(const int& idx, ViewGeom* vg){
         vg->razf = fabsf(vg->for_sat_azim - vg->for_sol_azim);
         if (vg->razf > 180.0) vg->razf = 360.0 - vg->razf;
         s3RazImgs[1].img[idx] = vg->razf;
-        s3ScatAngImgs[1].img[idx] = calcScatAng(vg->for_sol_zen, vg->for_sat_zen, vg->razf);
+        s3ScatAngImgs[1].img[idx] = vg->scat_ang_f = calcScatAng(vg->for_sol_zen, vg->for_sat_zen, vg->razf);
     }
 }
 
@@ -586,7 +593,8 @@ void S3NcdfData::getToaReflecF(const int& idx, float tarr[][N_SLSTR_VIEWS]){
 void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
     setBit(&pix.qflag, AOD_ZERO, (pix.aod < 0.003));
     setBit(&pix.qflag, AOD_HIGH, (pix.aod > 3.003));
-    if (pix.aod > 0.003 /*&& pix.aod < 3.003*/){
+//    if (pix.aod > 0.003 /*&& pix.aod < 3.003*/){
+    if (true){
         for (int iBand = 0; iBand < N_SLSTR_BANDS; iBand++) {
             s3AodImgs[iBand].img[idx] = pix.aod * pix.spec_aod_fac[iBand];
             s3UncImgs[iBand].img[idx] = pix.ediff * pix.spec_aod_fac[iBand];
@@ -620,6 +628,58 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
         
         for (int i=0; i<N_MP; i++){
             s3ModelParImgs[i].img[idx] = pix.model_p[i];
+        }
+    }
+}
+
+void S3NcdfData::createFilterAod(){
+    int idx[9];
+    const float minAOD = 0.003;
+    const float maxFMIN = 6;
+    for (int j=0; j<s3AodFltrImg.imgP.height; j++){
+        for (int i=0; i<s3AodFltrImg.imgP.width; i++){
+            if (j==44 && i==66){
+                fprintf(stderr, "stop\n");
+            }
+            
+            idx[0] = (j) * s3AodFltrImg.imgP.width + i;
+            if (j==0) {
+                idx[1] = idx[2] = idx[3] = -1;
+            }
+            else {
+                idx[1] = (i > 0) ? (j-1) * s3AodFltrImg.imgP.width + i-1 : -1;
+                idx[2] = (j-1) * s3AodFltrImg.imgP.width + i;
+                idx[3] = (i < s3AodFltrImg.imgP.width-1) ? (j-1) * s3AodFltrImg.imgP.width + i+1 : -1;
+            }
+
+            idx[4] = (i > 0) ? (j) * s3AodFltrImg.imgP.width + i-1 : -1;
+            idx[5] = (j) * s3AodFltrImg.imgP.width + i;
+            idx[6] = (i < s3AodFltrImg.imgP.width-1) ? (j) * s3AodFltrImg.imgP.width + i+1 : -1;
+
+            if (j==s3AodFltrImg.imgP.height-1) {
+                idx[7] = idx[8] = idx[9] = -1;
+            }
+            else {
+                idx[7] = (i > 0) ? (j+1) * s3AodFltrImg.imgP.width + i-1 : -1;
+                idx[8] = (j+1) * s3AodFltrImg.imgP.width + i;
+                idx[9] = (i < s3AodFltrImg.imgP.width-1) ? (j+1) * s3AodFltrImg.imgP.width + i+1 : -1;
+            }
+            
+            if (s3AodImgs[0].img[idx[0]] > minAOD && s3FminImg.img[idx[0]] < maxFMIN) {
+                float mean = 0, m2=0, count=0;
+                float delta;
+                for (int i=0; i<9; i++){
+                    if (idx[i]>=0 && s3AodImgs[0].img[idx[i]] > minAOD && s3FminImg.img[idx[i]] < maxFMIN){
+                        count++;
+                        delta = s3AodImgs[0].img[idx[i]] - mean;
+                        mean += delta / count;
+                        m2 += delta * (s3AodImgs[0].img[idx[i]] - mean);
+                    }
+                }                
+                if (count > 3 && sqrt(m2/(count-1)) < 0.1) {
+                    s3AodFltrImg.img[idx[0]] = s3AodImgs[0].img[idx[0]];
+                }
+            }
         }
     }
 }

@@ -155,7 +155,7 @@ struct GeoPos {
 struct ViewGeom {
     float for_sat_azim, for_sol_azim, nad_sat_azim, nad_sol_azim;
     float for_sol_zen, for_sat_zen, nad_sol_zen, nad_sat_zen;
-    float razn, razf;
+    float razn, razf, scat_ang_n, scat_ang_f;
 };
 
 struct LutCoefs {
@@ -179,12 +179,13 @@ struct SlstrPixel{
     unsigned short qflag;
     LutPars lutpars;
     LutCoefs inv_coef[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // inversion coefficients [band][angle]
-    float DD[N_SLSTR_BANDS][N_SLSTR_VIEWS];       // diffuse fraction per band and angle
-    float RR[N_SLSTR_BANDS][N_SLSTR_VIEWS];       // BRF or SDR  per band and angle
-    float tarr[N_SLSTR_BANDS][N_SLSTR_VIEWS];     // TOA reflec  per band and angle
-    float rho_surf[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // modelled ocean reflec from LUT per band and angle
-    float angWeights[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // fit weights in angular model per band and angle
-    float aod, fmin, ediff;                       // retrieved aod, fit residual and uncertainty
+    float DD[N_SLSTR_BANDS][N_SLSTR_VIEWS];       // diffuse fraction per band and angle [band][angle]
+    float RR[N_SLSTR_BANDS][N_SLSTR_VIEWS];       // BRF or SDR  per band and angle [band][angle]
+    float tarr[N_SLSTR_BANDS][N_SLSTR_VIEWS];     // TOA reflec  per band and angle [band][angle]
+    float rho_surf[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // modelled ocean reflec from LUT per band and angle [band][angle]
+    float angWeights[N_SLSTR_BANDS][N_SLSTR_VIEWS]; // fit weights in angular model per band and angle [band][angle]
+    float specWeights[N_SLSTR_BANDS];
+    float aod, fmin, fminSpec, fminAng, ediff;    // retrieved aod, fit residual and uncertainty
     float spec_aod_fac[N_SLSTR_BANDS];            // factors for spectral AOD, i.e.(AOD[BAND]/AOD[550])
     float ssa[N_SLSTR_BANDS];                     // single scattering albedo
     float ndvi;                                   // ndvi
@@ -198,6 +199,7 @@ struct SlstrPixel{
     float prevFineFrac;                           // previously retrieved fine mode fraction
     long time;
     float model_p[N_MP];                             // surface model pars [N_MP]
+    double mval[N_SLSTR_BANDS][N_SLSTR_VIEWS];
 };
 
 
