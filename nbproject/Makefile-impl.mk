@@ -31,7 +31,7 @@ DEFAULTCONF=Debug
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug Release desert Europe Thailand Australia WSahara SAmerica 
+ALLCONFS=Debug Release desert desert1 Europe Thailand Australia WSahara SAmerica 
 
 
 # build

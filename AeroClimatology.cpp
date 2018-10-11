@@ -111,10 +111,15 @@ void AeroClimatology::getMixPercentagesInt(const GeoPos& gp, float *mixPercentag
     fot = (fot>0) ? fot : 0.05;
     fot = (fot<1) ? fot : 0.95;
 
-    wof = interpol_2d_img(weakOfFine, x2, y2, nx, ny, false);    
+    wof = interpol_2d_img(weakOfFine, x2, y2, nx, ny, false);
+    //wof = wof + 0.1 * ( 1 - wof );
+    wof = 0.35 * pow((wof + 0.51), 2) + 0.2;
+    //wof = 0.95;
 
     //doc = fineOfTotal[((int)y2) * nx + (int)x2];
-    doc = interpol_2d_img(dustOfCoarse, x2, y2, nx, ny, false);    
+    doc = interpol_2d_img(dustOfCoarse, x2, y2, nx, ny, false);
+    doc = 2 * sqrt(doc + 1) - 2;
+    //doc = 0.8 * doc;
 
     *climAod = interpol_2d_img(aod, x2, y2, nx, ny, false);
 

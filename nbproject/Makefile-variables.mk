@@ -30,6 +30,14 @@ CND_ARTIFACT_PATH_desert=dist/desert/Cygwin-Windows/aardvarc_slstr
 CND_PACKAGE_DIR_desert=dist/desert/Cygwin-Windows/package
 CND_PACKAGE_NAME_desert=aardvarcslstr.tar
 CND_PACKAGE_PATH_desert=dist/desert/Cygwin-Windows/package/aardvarcslstr.tar
+# desert1 configuration
+CND_PLATFORM_desert1=Cygwin-Windows
+CND_ARTIFACT_DIR_desert1=dist/desert1/Cygwin-Windows
+CND_ARTIFACT_NAME_desert1=aardvarc_slstr
+CND_ARTIFACT_PATH_desert1=dist/desert1/Cygwin-Windows/aardvarc_slstr
+CND_PACKAGE_DIR_desert1=dist/desert1/Cygwin-Windows/package
+CND_PACKAGE_NAME_desert1=aardvarcslstr.tar
+CND_PACKAGE_PATH_desert1=dist/desert1/Cygwin-Windows/package/aardvarcslstr.tar
 # Europe configuration
 CND_PLATFORM_Europe=Cygwin-Windows
 CND_ARTIFACT_DIR_Europe=dist/Europe/Cygwin-Windows

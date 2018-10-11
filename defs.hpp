@@ -198,8 +198,9 @@ struct SlstrPixel{
     float ax, cx;                                 // brent brackets
     float prevFineFrac;                           // previously retrieved fine mode fraction
     long time;
-    float model_p[N_MP];                             // surface model pars [N_MP]
-    double mval[N_SLSTR_BANDS][N_SLSTR_VIEWS];
+    float model_p[N_MP];                          // surface model pars [N_MP]
+    double mval[N_SLSTR_BANDS][N_SLSTR_VIEWS];    // model surface reflectance
+    float oblNadToaRatio1600;                         // TOA ratio oblique / nadir
 };
 
 

@@ -67,6 +67,7 @@ using namespace netCDF;
     const std::string S3NcdfData::D_AOD_NAME    = "D_AOD550";
     const std::string S3NcdfData::FM_AOD_NAME   = "FM_AOD550";
     const std::string S3NcdfData::ANGSTROM_NAME = "ANG550_870";
+    const std::string S3NcdfData::NDVI_NAME     = "NDVI";
     const std::string S3NcdfData::UNC_NAME[N_SLSTR_BANDS] = {"AOD_0550_uncertainty", "AOD_0659_uncertainty", "AOD_0865_uncertainty", "AOD_1610_uncertainty", "AOD_2250_uncertainty"};
     const std::string S3NcdfData::RAZ_NAME[N_SLSTR_VIEWS] = {"rel_azimuth_an", "rel_azimuth_ao"};
     const std::string S3NcdfData::SCATANG_NAME[N_SLSTR_VIEWS] = {"scat_angle_an", "scat_angle_ao"};
@@ -487,6 +488,11 @@ void S3NcdfData::initResultImgs(const ImageProperties& outImgProp){
     s3AngstromImg.setFillVal((float)(-1));
     s3AngstromImg.initImgArray((float)(-1));
     
+    s3NdviImg = S3BasicImage<float>(outImgProp);
+    s3NdviImg.name = NDVI_NAME;
+    s3NdviImg.setFillVal((float)(-1));
+    s3NdviImg.initImgArray((float)(-1));
+    
     for (int i=0; i<N_MP; i++) {
         s3ModelParImgs[i] = S3BasicImage<float>(outImgProp);
         s3ModelParImgs[i].name = MODELP_NAMES[i];
@@ -625,6 +631,7 @@ void S3NcdfData::setRetrievalResults(const int& idx, SlstrPixel& pix){
         s3DustAodImg.img[idx] = pix.lutpars.mix_frac[2] * (1 - pix.lutpars.mix_frac[0]) * pix.aod;
         s3FmAodImg.img[idx]   = pix.lutpars.mix_frac[0] * pix.aod;
         s3AngstromImg.img[idx] = log(1. / pix.spec_aod_fac[2]) * angWvlLog;
+        s3NdviImg.img[idx] = pix.ndvi;
         
         for (int i=0; i<N_MP; i++){
             s3ModelParImgs[i].img[idx] = pix.model_p[i];

@@ -6,6 +6,7 @@
 # Debug configuration
 # Release configuration
 # desert configuration
+# desert1 configuration
 # Europe configuration
 # Thailand configuration
 # Australia configuration

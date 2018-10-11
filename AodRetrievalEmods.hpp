@@ -37,13 +37,18 @@
 //const float inst_frac_error[] = {.048, .064, .04, .066, .066}; /* Instrument calibration errors adjusted to uncertainty document specs (taken from ORAC)) */
 const float inst_frac_error[] = {.024, .032, .02, .06, 0.12}; /* Instrument calibration errors adjusted to uncertainty document specs (taken from ORAC)) */
 //const float inst_frac_error[] = {.048, .064, .04, .066, .12}; /* Instrument calibration errors adjusted to uncertainty document specs (taken from ORAC)) */
+
 //const float m_error_offset[] = {0.005, 0.005, 0.02, 0.01}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
 //const float m_error_offset[] = {0.01, 0.01, 0.04, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
-const float m_error_offset_v[] = {0.01, 0.01, 0.04, 0.02, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
-const float m_error_offset_b[] = {0.01, 0.01, 0.01, 0.15, 0.15}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+//const float m_error_offset_v[] = {0.01, 0.01, 0.04, 0.02, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+//const float m_error_offset_b[] = {0.01, 0.01, 0.01, 0.15, 0.15}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+const float m_error_offset_v[] = {0.01, 0.01, 0.06, 0.02, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+const float m_error_offset_b[] = {0.01, 0.01, 0.02, 0.15, 0.15}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+
 //const float m_error_gain[] = {0.07, 0.07, 0.15, 0.1}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
-const float m_error_gain_v[] = {0.05, 0.05, 0.10, 0.07, 0.07}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
-const float m_error_gain_b[] = {0.05, 0.05, 0.05, 0.2, 0.2}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
+//const float m_error_gain_v[] = {0.05, 0.05, 0.10, 0.07, 0.07}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
+//const float m_error_gain_b[] = {0.05, 0.05, 0.05, 0.2, 0.2}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
+
 const float rt_abs_error[] = {.006, .006, .006, .006, .006}; /* Approximate uncertainty in surface reflectance from 6S code for known constituents (from Kalashnikova et al) */
 
 //const float aer_mod_frac_error[] = {0.05, 0.05, 0.05, 0.05, 0.05}; /* Fractional error per channel in aerosol scattering coefficient (multiple of SSA and phase fn errors */
@@ -95,7 +100,7 @@ public:
         fmin = brentAod.fmin;
         pix.aod = brentAod.xmin;
         penalty = (fot - pix.lutpars.mix_frac[0]);
-        fmin += 25 * pow(penalty, 4);
+        fmin += 5 * pow(penalty, 4);
         //fmin += pow(penalty, 2) / 0.5;  // sigma(fine mode fraction) = 0.5
         //fmin += pow(penalty, 2) / 2;  // sigma(fine mode fraction) = 2
         if (pix.prevFineFrac > 0) {
@@ -127,10 +132,6 @@ public:
         double k, dir, dif, g;
         double Rpath, y, m_error, o_error;
         double lim;
-        double WGv[] = {1500.0, 1000.0, 1000.0, 1500.0};
-        double WGe[] = {1000.0, 1000.0, 1000.0, 1000.0};
-        double WGd[] = {1000.0, 1000.0, 1000.0, 0.0};
-        double WG[]  = {1000.0, 1000.0, 1000.0, 100.0};
 
 
         for (i = 0; i < N_SLSTR_BANDS; i++) {
@@ -145,14 +146,15 @@ public:
                 /* Model and observation error to calculate chi sq. Could include full error covariane matrix here */
                 /* Model errors per channel derived from fit against Monte Carlo 3D model */
                 /* Simple error propogation of atmospheric & sensor errors based on net atmospheric effect for solar/view geometry and opt depth */
-                m_error = m_error_offset_v[i];
+//                m_error = m_error_offset_v[i];
                 //m_error = pow(m_error_offset_v[i], 2);
-                //switch (i){
-                //    case 2  : m_error = pix.ndvi_veg_weight * m_error_offset_v[i] + (1.0 - pix.ndvi_veg_weight) * m_error_offset_b[i]; break;
-                //    case 3  : m_error = pix.dust_weight * m_error_offset_v[i] + (1.0 - pix.dust_weight) * m_error_offset_b[i]; break;
-                //    default : m_error = m_error_offset_v[i]; break;
-                //}
-                m_error = m_error*m_error;//pow(m_error, 2);
+                switch (i){
+                    case 2  : m_error = pix.ndvi_veg_weight * m_error_offset_v[i] + (1.0 - pix.ndvi_veg_weight) * m_error_offset_b[i]; break;
+                    case 3  : 
+                    case 4  : m_error = pix.dust_weight * m_error_offset_v[i] + (1.0 - pix.dust_weight) * m_error_offset_b[i]; break;
+                    default : m_error = m_error_offset_v[i]; break;
+                }
+                m_error = pow(m_error, 2);
 
                 //m_error = pix.ndvi_veg_weight * m_error_offset_v[i] + (1.0 - pix.ndvi_veg_weight) * m_error_offset_b[i];
                 //m_error = m_error_offset[i] + mval[i][j] * m_error_gain[i];
@@ -170,7 +172,7 @@ public:
 
                 //o_error = (0.5 * inst_frac_error[i] * pix.tarr[i][j] * *(dRsurf_dToa + i*N_SLSTR_VIEWS + j));
                 o_error = (inst_frac_error[i] * pix.tarr[i][j] * *(dRsurf_dToa + i*N_SLSTR_VIEWS + j));
-                o_error = o_error * o_error;
+                o_error = pow(o_error, 2);
 
                 //Rpath = pix.inv_coef[i][j].xb / (pix.inv_coef[i][j].xa * pix.inv_coef[i][j].cfac);
                 //o_error += (aer_mod_frac_error[i] * Rpath);
@@ -189,7 +191,7 @@ public:
                  */
 
                 //o_error = rt_abs_error[i];
-                o_error += rt_abs_error[i]*rt_abs_error[i];//pow(rt_abs_error[i],2);
+                o_error += pow(rt_abs_error[i],2);
 
 
                 /* Replace WG to give chi sq. Could still use old WG in addition if normalised to 1 */
@@ -201,52 +203,49 @@ public:
             }
         }
 
+        //
+        // constraint on spectral parameters of surface model
+        //
         
-        if (pix.geom.scat_ang_f < 40 && pix.ndvi > 0.5){
-            //lim = 0.04; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0; //w[550]
-            lim = 1.1*p[1]; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0; //w[550]
-        }
+        // if surface is dark (p[550nm] < 0.07) it should be vegetation >> p[550]>p[670]
+        // there may still be a few pixels in Sahara / Arabia with very dark vulcanic rock formations
+        // these will show problems...
+        //if (pix.geom.scat_ang_f < 50 && pix.ndvi > 0.6){
+            float w = (p[0] < 0.07) ? (p[0]-0.07)/(0.04-0.07) : 0;
+            lim = 1.2*p[1]; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0*w; //w[550]
+        //}
+            
+        // limit slope between 550 and 670 to be less than 3 * slope between 670 and 865
+        // should be true for all "reasonable" surface types
+        lim = p[1]-2*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*50.0; //w[550]
+        //lim = p[1]-3*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*500.0; //w[550]
         //lim = p[1] / 2.5; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*2000.0; //w[550]
-        lim = p[1]-3*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*500.0; //w[550]
+
+        //w = 1.3 + (1.0 - 1.3) / (0.7 - 0.1) * (pix.ndvi - 0.1);
+        //w = (w < 1) ? 1 : (w > 1.3) ? 1.3 : w;
+        //lim = p[4]/w; tot = tot + (lim - p[1])*(lim - p[1])*500.0; //w[659]
+
+        
         lim = 0.03; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0; //w[550]
         lim = 0.02; if (p[1] < lim) tot = tot + (lim - p[1])*(lim - p[1])*1000.0; //w[659]
         lim = 0.01; if (p[2] < lim) tot = tot + (lim - p[2])*(lim - p[2])*1000.0; //w[865]
         lim = 0.01; if (p[3] < lim) tot = tot + (lim - p[3])*(lim - p[3])*1000.0; //w[1610]
         lim = 0.01; if (p[4] < lim) tot = tot + (lim - p[4])*(lim - p[4])*1000.0; //w[2250]
+        
+        //
+        // constraint on geometry parameters of surface model
+        //
         lim = 0.49; if (p[5] < lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0; //p[nadir]
         lim = 0.51; if (p[5] > lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0; //p[nadir]
-        //lim = 0.20; if (p[6] < lim) tot = tot + (lim - p[6])*(lim - p[6])*1000.0; //p[oblique]
-                
+        lim = 0.20; if (p[6] < lim) tot = tot + (lim - p[6])*(lim - p[6])*1000.0; //p[oblique]
+        //lim = 1.20; if (p[6] > lim) tot = tot + (lim - p[6])*(lim - p[6])*1000.0;
         
-        //lim = 1.20; if (p[5] > lim) tot = tot + (lim - p[5])*(lim - p[5])*1000.0;
-    /*
-        lim = 0.01; if (p[0 + 1] < lim) tot = tot + (lim - p[0 + 1])*(lim - p[0 + 1])*1000.0;
-        lim = 0.01; if (p[1 + 1] < lim) tot = tot + (lim - p[1 + 1])*(lim - p[1 + 1])*1000.0;
-        lim = 0.01; if (p[2 + 1] < lim) tot = tot + (lim - p[2 + 1])*(lim - p[2 + 1])*1000.0;
-        lim = 0.01; if (p[3 + 1] < lim) tot = tot + (lim - p[3 + 1])*(lim - p[3 + 1])*1000.0;
-        lim = 0.49; if (p[4 + 1] < lim) tot = tot + (lim - p[4 + 1])*(lim - p[4 + 1])*1000.0;
-        lim = 0.20; if (p[5 + 1] < lim) tot = tot + (lim - p[5 + 1])*(lim - p[5 + 1])*1000.0;
-
-        lim = 0.70; if (p[0 + 1] > lim) tot = tot + (lim - p[0 + 1])*(lim - p[0 + 1])*1000.0;
-        lim = 0.70; if (p[1 + 1] > lim) tot = tot + (lim - p[1 + 1])*(lim - p[1 + 1])*1000.0;
-        lim = 0.70; if (p[2 + 1] > lim) tot = tot + (lim - p[2 + 1])*(lim - p[2 + 1])*1000.0;
-        lim = 0.70; if (p[3 + 1] > lim) tot = tot + (lim - p[3 + 1])*(lim - p[3 + 1])*1000.0;
-        lim = 1.00; if (p[4 + 1] > lim) tot = tot + (lim - p[4 + 1])*(lim - p[4 + 1])*1000.0;
-        lim = 1.20; if (p[5 + 1] > lim) tot = tot + (lim - p[5 + 1])*(lim - p[5 + 1])*1000.0;
-    */
-    /*
-        lim = 0.49; if (p[4 + 1] < lim) tot = tot + (lim - p[4 + 1])*(lim - p[4 + 1])*1000.0;
-        lim = 0.20; if (p[5 + 1] < lim) tot = tot + (lim - p[5 + 1])*(lim - p[5 + 1])*1000.0;
-        lim = 0.51; if (p[4 + 1] > lim) tot = tot + (lim - p[4 + 1])*(lim - p[4 + 1])*1000.0;
-    */
+        // limit obliq to nadir ratio of model parameters to be < ratio at TOA reflec
+        // assumption here is, that the atmospheric contribution always leads to increase of the ratio
+        // due to the longer light path in oblique
+        lim = pix.oblNadToaRatio1600 * p[5]; if (p[6] > lim) tot = tot + (lim - p[6])*(lim - p[6])*50.0;
         
-        //fprintf(stderr, "pix: %d/%d fot: %f aod: %f\n", pix.x, pix.y, pix.lutpars.mixing[3]/pix.lutpars.mix_frac[1], pix.aod);
-        //for (int iVec=0; iVec<p.size(); iVec++){
-        //    fprintf(stderr, " %g ", p[iVec]);
-        //}
-        //fprintf(stderr, "\ntot: %g\n\n", tot); fflush(stderr);
-
-
+        
         return (float) tot;
 
     }
@@ -332,12 +331,14 @@ public:
 
         pix.ndvi = (pix.RR[2][0] - pix.RR[1][0]) / (pix.RR[2][0] + pix.RR[1][0]);
         //pix.ndvi = (pix.tarr[2][0] - pix.tarr[1][0]) / (pix.tarr[2][0] + pix.tarr[1][0]);
-        //pix.ndvi_veg_weight = (1.0 - 0.0) / (0.35 - 0.15) * (pix.ndvi - 0.15);
-        //if (pix.ndvi_veg_weight < 0) pix.ndvi_veg_weight = 0.0;
-        //if (pix.ndvi_veg_weight > 1) pix.ndvi_veg_weight = 1.0;
-        //pix.dust_weight = (0.0 - 1.0) / (0.6 - 0.4) * (pix.tarr[3][0] - 0.6);
-        //if (pix.dust_weight < 0) pix.dust_weight = 0.0;
-        //if (pix.dust_weight > 1) pix.dust_weight = 1.0;
+
+        pix.ndvi_veg_weight = (1.0 - 0.0) / (0.7 - 0.1) * (pix.ndvi - 0.1);
+        if (pix.ndvi_veg_weight < 0) pix.ndvi_veg_weight = 0.0;
+        if (pix.ndvi_veg_weight > 1) pix.ndvi_veg_weight = 1.0;
+
+        pix.dust_weight = (0.0 - 1.0) / (0.6 - 0.4) * (pix.tarr[3][0] - 0.6);
+        if (pix.dust_weight < 0) pix.dust_weight = 0.0;
+        if (pix.dust_weight > 1) pix.dust_weight = 1.0;
 
         for (i = 0; i < N_SLSTR_BANDS; i++){
             for (j = 0; j < N_SLSTR_VIEWS; j++){
@@ -364,14 +365,14 @@ public:
         
         // constrain aod through AOD climatology
         if (pix.ndvi < 0.5 && pix.RR[3][1] > 0.3) {
-            if (tau < 0.05 && (fmin + fret) < 0.1) {
-                ftauClim = (tau - 0.05);
-                ftauClim *= ftauClim / 0.5;
-            }
-            if (tau > pix.lutpars.climAod) {
-                ftauClim = (tau - pix.lutpars.climAod);
-                ftauClim *= ftauClim / 4.0;
-            }
+//            if (tau < 0.05 && (fmin + fret) < 0.1) {
+//                ftauClim = (tau - 0.05);
+//                ftauClim *= ftauClim / 0.5;
+//            }
+//            if (tau > pix.lutpars.climAod) {
+//                ftauClim = (tau - pix.lutpars.climAod);
+//                ftauClim *= ftauClim / 4.0;
+//            }
         }
 
 //        if (pix.ndvi < 0.2) {

@@ -107,15 +107,15 @@ int main(int argc, char** argv) {
         int idx;
         nPix=0;
         for (slstrPixel.x = 0; slstrPixel.x < imgWidth; slstrPixel.x++){
-//        for (slstrPixel.x = 119; slstrPixel.x < 120; slstrPixel.x++){
+//        for (slstrPixel.x = 78; slstrPixel.x < 79; slstrPixel.x++){
             fprintf(stdout, "processing %6.2f%%\r", (float)(slstrPixel.x)/imgWidth*100.0); fflush(stdout);
             for (slstrPixel.y = 0; slstrPixel.y < imgHeight; slstrPixel.y++){
-//            for (slstrPixel.y = 79; slstrPixel.y < 80; slstrPixel.y++){
+//            for (slstrPixel.y = 109; slstrPixel.y < 110; slstrPixel.y++){
                 idx = slstrPixel.y * imgWidth + slstrPixel.x;
 
                 slstrPixel.qflag = 0;
                 slstrPixel.prevFineFrac = 0;
-                slstrPixel.ndvi = 1;
+                slstrPixel.ndvi = -1;
                 slstrPixel.ndvi_veg_weight = 1;
                 slstrPixel.dust_weight = 0;
                 slstrPixel.aod = -1;
@@ -124,6 +124,7 @@ int main(int argc, char** argv) {
                 slstrPixel.fminAng = -1;
                 slstrPixel.fminSpec = -1;
                 for (int i=0; i<N_MP; i++) slstrPixel.model_p[i] = -1;
+                slstrPixel.oblNadToaRatio1600 = 0;
 
                 if (s3Data.isValidPixel(idx)){
                     s3Data.getGeoPos(idx, &slstrPixel.geo_pos);
@@ -180,6 +181,7 @@ int main(int argc, char** argv) {
                         slstrPixel.rho_glint[1] = slstrPixel.rho_surf[3][1];
 
                         slstrPixel.prevFineFrac = calcPrevFF(&s3Data.s3AerFracImgs[1], slstrPixel.x, slstrPixel.y);
+                        slstrPixel.oblNadToaRatio1600 = slstrPixel.tarr[3][1] / slstrPixel.tarr[3][0];
 
                         AodRetrieval retrieval(slstrPixel, lut, ocnLut);
                         if ((s3Data.flags.img[idx] & 15) == 3){
@@ -243,6 +245,7 @@ int main(int argc, char** argv) {
             addWriteVar(&ncOut, dimVec, s3Data.s3DustAodImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3AbsAodImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3AngstromImg);
+            addWriteVar(&ncOut, dimVec, s3Data.s3NdviImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3SsaImg);
             addWriteVar(&ncOut, dimVec, s3Data.s3FminImg);
             for (int iView = 0; iView < N_SLSTR_VIEWS; iView++){

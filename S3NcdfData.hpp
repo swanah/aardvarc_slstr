@@ -68,6 +68,7 @@ public:
     S3BasicImage<float>  s3DustAodImg;                            // dust aod
     S3BasicImage<float>  s3FmAodImg;                              // fine mode aod
     S3BasicImage<float>  s3AngstromImg;                           // angstroem image 
+    S3BasicImage<float>  s3NdviImg;                               // ndvi image 
     
     S3BasicImage<float>  s3RPathImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // rPath images [views][bands]
     S3BasicImage<float>  s3TDownImgs[N_SLSTR_VIEWS][N_SLSTR_BANDS]; // downw. transm images [views][bands]
@@ -103,6 +104,7 @@ public:
     static const std::string D_AOD_NAME;
     static const std::string FM_AOD_NAME;
     static const std::string ANGSTROM_NAME;
+    static const std::string NDVI_NAME;
     static const std::string TIME_NAME;
     static const std::string UNC_NAME[N_SLSTR_BANDS];
     static const std::string RAZ_NAME[N_SLSTR_VIEWS];

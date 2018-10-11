@@ -26,6 +26,10 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
+                    <name>desert1</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
                     <name>Europe</name>
                     <type>1</type>
                 </confElem>
