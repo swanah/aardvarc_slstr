@@ -382,6 +382,85 @@
       <item path="tinyxml/tinyxmlparser.cpp" ex="false" tool="1" flavor2="4">
       </item>
     </conf>
+    <conf name="desert2" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+        </cTool>
+        <ccTool>
+          <developmentMode>6</developmentMode>
+          <standard>4</standard>
+          <incDir>
+            <pElem>P:/C++/NR</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerOptionItem>`pkg-config --libs netcdf-cxx4`</linkerOptionItem>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="AeroClimatology.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AeroClimatology.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AodRetrieval.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AodRetrieval.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AodRetrievalEmods.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AtmosphericLut.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AtmosphericLut.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Images.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="InputParameter.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="InputParameter.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Interpolation.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OceanReflLut.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="OceanReflLut.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="S3MetaData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="S3NcdfData.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="S3NcdfData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="defs.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="miscUtils.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinystr.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinystr.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinyxml.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinyxml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinyxmlerror.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinyxmlparser.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+    </conf>
     <conf name="Europe" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
@@ -541,6 +620,85 @@
       </item>
     </conf>
     <conf name="Australia" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>3</standard>
+        </cTool>
+        <ccTool>
+          <developmentMode>6</developmentMode>
+          <standard>4</standard>
+          <incDir>
+            <pElem>P:/C++/NR</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerOptionItem>`pkg-config --libs netcdf-cxx4`</linkerOptionItem>
+            <linkerLibStdlibItem>Mathematics</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="AeroClimatology.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AeroClimatology.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AodRetrieval.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AodRetrieval.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AodRetrievalEmods.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="AtmosphericLut.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="AtmosphericLut.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Images.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="InputParameter.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="InputParameter.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Interpolation.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="OceanReflLut.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="OceanReflLut.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="S3MetaData.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="S3MetaData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="S3NcdfData.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="S3NcdfData.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="defs.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="main.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="miscUtils.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="miscUtils.hpp" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinystr.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinystr.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinyxml.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinyxml.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tinyxml/tinyxmlerror.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="tinyxml/tinyxmlparser.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+    </conf>
+    <conf name="AustraliaBright" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
         <dependencyChecking>true</dependencyChecking>

@@ -38,6 +38,14 @@ CND_ARTIFACT_PATH_desert1=dist/desert1/Cygwin-Windows/aardvarc_slstr
 CND_PACKAGE_DIR_desert1=dist/desert1/Cygwin-Windows/package
 CND_PACKAGE_NAME_desert1=aardvarcslstr.tar
 CND_PACKAGE_PATH_desert1=dist/desert1/Cygwin-Windows/package/aardvarcslstr.tar
+# desert2 configuration
+CND_PLATFORM_desert2=Cygwin-Windows
+CND_ARTIFACT_DIR_desert2=dist/desert2/Cygwin-Windows
+CND_ARTIFACT_NAME_desert2=aardvarc_slstr
+CND_ARTIFACT_PATH_desert2=dist/desert2/Cygwin-Windows/aardvarc_slstr
+CND_PACKAGE_DIR_desert2=dist/desert2/Cygwin-Windows/package
+CND_PACKAGE_NAME_desert2=aardvarcslstr.tar
+CND_PACKAGE_PATH_desert2=dist/desert2/Cygwin-Windows/package/aardvarcslstr.tar
 # Europe configuration
 CND_PLATFORM_Europe=Cygwin-Windows
 CND_ARTIFACT_DIR_Europe=dist/Europe/Cygwin-Windows
@@ -62,6 +70,14 @@ CND_ARTIFACT_PATH_Australia=dist/Australia/Cygwin-Windows/aardvarc_slstr
 CND_PACKAGE_DIR_Australia=dist/Australia/Cygwin-Windows/package
 CND_PACKAGE_NAME_Australia=aardvarcslstr.tar
 CND_PACKAGE_PATH_Australia=dist/Australia/Cygwin-Windows/package/aardvarcslstr.tar
+# AustraliaBright configuration
+CND_PLATFORM_AustraliaBright=Cygwin-Windows
+CND_ARTIFACT_DIR_AustraliaBright=dist/AustraliaBright/Cygwin-Windows
+CND_ARTIFACT_NAME_AustraliaBright=aardvarc_slstr
+CND_ARTIFACT_PATH_AustraliaBright=dist/AustraliaBright/Cygwin-Windows/aardvarc_slstr
+CND_PACKAGE_DIR_AustraliaBright=dist/AustraliaBright/Cygwin-Windows/package
+CND_PACKAGE_NAME_AustraliaBright=aardvarcslstr.tar
+CND_PACKAGE_PATH_AustraliaBright=dist/AustraliaBright/Cygwin-Windows/package/aardvarcslstr.tar
 # WSahara configuration
 CND_PLATFORM_WSahara=Cygwin-Windows
 CND_ARTIFACT_DIR_WSahara=dist/WSahara/Cygwin-Windows

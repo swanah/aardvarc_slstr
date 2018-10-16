@@ -643,9 +643,11 @@ void S3NcdfData::createFilterAod(){
     int idx[9];
     const float minAOD = 0.003;
     const float maxFMIN = 6;
+    const float maxSDEV = 0.15;
+    const float maxRelSDEV = 0.8;
     for (int j=0; j<s3AodFltrImg.imgP.height; j++){
         for (int i=0; i<s3AodFltrImg.imgP.width; i++){
-            if (j==44 && i==66){
+            if (j==17 && i==71){
                 fprintf(stderr, "stop\n");
             }
             
@@ -674,7 +676,7 @@ void S3NcdfData::createFilterAod(){
             
             if (s3AodImgs[0].img[idx[0]] > minAOD && s3FminImg.img[idx[0]] < maxFMIN) {
                 float mean = 0, m2=0, count=0;
-                float delta;
+                float delta, sdev;
                 for (int i=0; i<9; i++){
                     if (idx[i]>=0 && s3AodImgs[0].img[idx[i]] > minAOD && s3FminImg.img[idx[i]] < maxFMIN){
                         count++;
@@ -683,7 +685,8 @@ void S3NcdfData::createFilterAod(){
                         m2 += delta * (s3AodImgs[0].img[idx[i]] - mean);
                     }
                 }                
-                if (count > 3 && sqrt(m2/(count-1)) < 0.1) {
+                sdev = sqrt(m2/(count-1));
+                if (count > 3 && sdev < maxSDEV && sdev/mean < maxRelSDEV) {
                     s3AodFltrImg.img[idx[0]] = s3AodImgs[0].img[idx[0]];
                 }
             }

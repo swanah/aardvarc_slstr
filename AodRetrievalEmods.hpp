@@ -40,10 +40,9 @@ const float inst_frac_error[] = {.024, .032, .02, .06, 0.12}; /* Instrument cali
 
 //const float m_error_offset[] = {0.005, 0.005, 0.02, 0.01}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
 //const float m_error_offset[] = {0.01, 0.01, 0.04, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
-//const float m_error_offset_v[] = {0.01, 0.01, 0.04, 0.02, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
 //const float m_error_offset_b[] = {0.01, 0.01, 0.01, 0.15, 0.15}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
 const float m_error_offset_v[] = {0.01, 0.01, 0.06, 0.02, 0.02}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
-const float m_error_offset_b[] = {0.01, 0.01, 0.02, 0.15, 0.15}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
+const float m_error_offset_b[] = {0.01, 0.01, 0.02, 0.15, 0.08}; /* Land surface model error estimates per channel, derived from MOnte Carlo simulations */
 
 //const float m_error_gain[] = {0.07, 0.07, 0.15, 0.1}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
 //const float m_error_gain_v[] = {0.05, 0.05, 0.10, 0.07, 0.07}; /* Written as sum of absolute ('offset') and relative ('gain') errors, 1sd */
@@ -100,12 +99,12 @@ public:
         fmin = brentAod.fmin;
         pix.aod = brentAod.xmin;
         penalty = (fot - pix.lutpars.mix_frac[0]);
-        fmin += 5 * pow(penalty, 4);
+        fmin += 15 * pow(penalty, 4);
         //fmin += pow(penalty, 2) / 0.5;  // sigma(fine mode fraction) = 0.5
         //fmin += pow(penalty, 2) / 2;  // sigma(fine mode fraction) = 2
         if (pix.prevFineFrac > 0) {
             penalty = (fot - pix.prevFineFrac);
-            fmin += pow(penalty, 2) / 0.5;  // sigma for previous fine mode fraction 0.1
+            fmin += pow(penalty, 2) / 0.2;  // sigma for previous fine mode fraction 0.1
 //            fmin += 25 * pow(penalty, 4);
         }
         
@@ -217,15 +216,16 @@ public:
             
         // limit slope between 550 and 670 to be less than 3 * slope between 670 and 865
         // should be true for all "reasonable" surface types
-        lim = p[1]-2*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*50.0; //w[550]
+        lim = p[1]-2.*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*50.0; //w[550]
         //lim = p[1]-3*(p[2]-p[1]); if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*500.0; //w[550]
         //lim = p[1] / 2.5; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*2000.0; //w[550]
 
-        //w = 1.3 + (1.0 - 1.3) / (0.7 - 0.1) * (pix.ndvi - 0.1);
-        //w = (w < 1) ? 1 : (w > 1.3) ? 1.3 : w;
-        //lim = p[4]/w; tot = tot + (lim - p[1])*(lim - p[1])*500.0; //w[659]
+//        w = 1.2 + (1.5 - 1.2) / (0.7 - 0.1) * (pix.ndvi - 0.1);
+//        w = (w < 1.2) ? 1.2 : (w > 1.5) ? 1.5 : w;
+//        lim = p[4]/w; tot = tot + (lim - p[1])*(lim - p[1])*20.0; //w[659]
 
-        
+//_1    lim = (0.75*p[4]); tot = tot + (lim - p[1])*(lim - p[1])*100.0; //w[659]
+
         lim = 0.03; if (p[0] < lim) tot = tot + (lim - p[0])*(lim - p[0])*1000.0; //w[550]
         lim = 0.02; if (p[1] < lim) tot = tot + (lim - p[1])*(lim - p[1])*1000.0; //w[659]
         lim = 0.01; if (p[2] < lim) tot = tot + (lim - p[2])*(lim - p[2])*1000.0; //w[865]
@@ -243,7 +243,8 @@ public:
         // limit obliq to nadir ratio of model parameters to be < ratio at TOA reflec
         // assumption here is, that the atmospheric contribution always leads to increase of the ratio
         // due to the longer light path in oblique
-        lim = pix.oblNadToaRatio1600 * p[5]; if (p[6] > lim) tot = tot + (lim - p[6])*(lim - p[6])*50.0;
+        //>>lim = pix.oblNadToaRatio1600 * p[5]; if (p[6] > lim) tot = tot + (lim - p[6])*(lim - p[6])*50.0;
+        lim = pix.oblNadToaRatio1600 * 0.9 * p[5]; tot += (p[6] < lim) ? pow(lim - p[6], 2)*10.0 : pow(lim - p[6], 2)*20.0;
         
         
         return (float) tot;
@@ -369,10 +370,10 @@ public:
 //                ftauClim = (tau - 0.05);
 //                ftauClim *= ftauClim / 0.5;
 //            }
-//            if (tau > pix.lutpars.climAod) {
-//                ftauClim = (tau - pix.lutpars.climAod);
-//                ftauClim *= ftauClim / 4.0;
-//            }
+            if (tau > pix.lutpars.climAod) {
+                ftauClim = (tau - pix.lutpars.climAod);
+                ftauClim *= ftauClim / 4.0;
+            }
         }
 
 //        if (pix.ndvi < 0.2) {

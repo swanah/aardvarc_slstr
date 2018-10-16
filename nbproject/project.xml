@@ -30,6 +30,10 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
+                    <name>desert2</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
                     <name>Europe</name>
                     <type>1</type>
                 </confElem>
@@ -39,6 +43,10 @@
                 </confElem>
                 <confElem>
                     <name>Australia</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>AustraliaBright</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
