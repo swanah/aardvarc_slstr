@@ -290,18 +290,18 @@ void S3MetaData::readProcessingInfo(TiXmlElement* processingInfo){
     TiXmlNode* node;
     TiXmlElement* subElem;
     std::string s;
-    
+
+    lv1Info = "";
     for (node = processingInfo->FirstChild("sentinel-safe:resource"); node; node = node->NextSibling("sentinel-safe:resource")){
         if ( strcmp(node->ToElement()->Attribute("role"), "L1 Product") == 0) {
-            break;
+            subElem = node->FirstChildElement("sentinel-safe:processing")->FirstChildElement("sentinel-safe:facility")->FirstChildElement("sentinel-safe:software");
+            std::string l1SwName = subElem->Attribute("name");
+            std::string l1SwVersion = subElem->Attribute("version");
+            std::stringstream ss;
+            ss << l1SwName << " v" << l1SwVersion;
+            lv1Info = ss.str();
         }
     }
-    subElem = node->FirstChildElement("sentinel-safe:processing")->FirstChildElement("sentinel-safe:facility")->FirstChildElement("sentinel-safe:software");
-    std::string l1SwName = subElem->Attribute("name");
-    std::string l1SwVersion = subElem->Attribute("version");
-    std::stringstream ss;
-    ss << l1SwName << " v" << l1SwVersion;
-    lv1Info = ss.str();
 }
 
 /**

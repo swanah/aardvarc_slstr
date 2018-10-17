@@ -77,6 +77,50 @@
         </environment>
       </runprofile>
     </conf>
+    <conf name="eumetTest" type="1">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>3</platform>
+      </toolsSet>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrPacific.par e:/sat/S3A_SLSTR/blubb/pacific/S3A_SL_1_RBT____20170701T184520_20170701T184820_20170701T203223_0179_019_241_3059_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrPacific.par e:/sat/S3A_SLSTR/recal/L1b/S3A_SL_1_RBT____20170701T083025_20170701T083325_20170701T103254_0179_019_235_2520_SVL_O_NR_002.SEN3 </runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrBlubb.par e:/sat/S3A_SLSTR/recal/L1b/S3A_SL_1_RBT____20170701T083025_20170701T083325_20170701T103254_0179_019_235_2520_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrBlubb1.par e:/sat/S3A_SLSTR/MPC/S3A_SL_1_RBT____20170619T101637_20170619T101937_20170619T122206_0179_019_065_2160_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrBlubb.par e:/sat/S3A_SLSTR/MPC/S3A_SL_1_RBT____20170619T101637_20170619T101937_20170619T122206_0179_019_065_2160_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrDesert_baseline.par e:/sat/S3A_SLSTR_AOD/desert/S3A_SL_1_RBT____20180214T100011_20180214T100311_20180214T120122_0179_028_022_2520_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrDesert_newLut.par e:/sat/S3A_SLSTR_AOD/desert/S3A_SL_1_RBT____20180214T100011_20180214T100311_20180214T120122_0179_028_022_2520_SVL_O_NR_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrThaiSuCld.par e:/sat/S3A_SLSTR/20180118/S3A_SL_1_RBT____20180118T100311_20180118T100611_20180119T143939_0179_027_022_2700_LN2_O_NT_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/slstrThaiSuCld.par e:/sat/S3A_SLSTR/20171015/S3A_SL_1_RBT____20171015T091946_20171015T092246_20171016T152547_0179_023_207_2340_LN2_O_NT_002.SEN3</runcommandpicklistitem>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/julienSuCld.par e:/sat/S3A_SLSTR/Julien/L1b/S3A_SL_1_RBT____20170507T020939_20170507T021239_20180913T120325_0180_017_217______LR1_D_NT_001.SEN3</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"  p:/C++/aardvarc/pars/julienSuCld.par e:/sat/S3A_SLSTR/Julien/L1b/S3A_SL_1_RBT____20170507T020939_20170507T021239_20180913T120325_0180_017_217______LR1_D_NT_001.SEN3</runcommand>
+        <rundir></rundir>
+        <buildfirst>true</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
     <conf name="desert" type="1">
       <toolsSet>
         <developmentServer>localhost</developmentServer>

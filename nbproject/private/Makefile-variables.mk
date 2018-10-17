@@ -5,6 +5,7 @@
 #
 # Debug configuration
 # Release configuration
+# eumetTest configuration
 # desert configuration
 # desert1 configuration
 # desert2 configuration

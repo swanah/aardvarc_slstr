@@ -22,6 +22,14 @@ CND_ARTIFACT_PATH_Release=dist/Release/Cygwin-Windows/aardvarc_slstr
 CND_PACKAGE_DIR_Release=dist/Release/Cygwin-Windows/package
 CND_PACKAGE_NAME_Release=aardvarcslstr.tar
 CND_PACKAGE_PATH_Release=dist/Release/Cygwin-Windows/package/aardvarcslstr.tar
+# eumetTest configuration
+CND_PLATFORM_eumetTest=Cygwin-Windows
+CND_ARTIFACT_DIR_eumetTest=dist/eumetTest/Cygwin-Windows
+CND_ARTIFACT_NAME_eumetTest=aardvarc_slstr
+CND_ARTIFACT_PATH_eumetTest=dist/eumetTest/Cygwin-Windows/aardvarc_slstr
+CND_PACKAGE_DIR_eumetTest=dist/eumetTest/Cygwin-Windows/package
+CND_PACKAGE_NAME_eumetTest=aardvarcslstr.tar
+CND_PACKAGE_PATH_eumetTest=dist/eumetTest/Cygwin-Windows/package/aardvarcslstr.tar
 # desert configuration
 CND_PLATFORM_desert=Cygwin-Windows
 CND_ARTIFACT_DIR_desert=dist/desert/Cygwin-Windows
